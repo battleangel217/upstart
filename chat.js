@@ -158,6 +158,9 @@ function openConversation(participantId, participantName, pfp, status, last_seen
     "action":"get_message",
     "conversation_id": currentConversationId
   }))
+
+  // Close sidebar on mobile when conversation is selected
+  closeSidebarOnMobile()
   console.log("hehie")
 }
 
@@ -279,3 +282,36 @@ document.getElementById("messageInput").addEventListener("keypress", (e) => {
     document.getElementById("sendBtn").click()
   }
 })
+
+// Mobile sidebar toggle functionality
+const sidebarToggleBtn = document.getElementById("sidebarToggleBtn")
+const sidebar = document.querySelector(".sidebar")
+const chatContainer = document.querySelector(".chat-container")
+
+if (sidebarToggleBtn) {
+  sidebarToggleBtn.addEventListener("click", (e) => {
+    e.stopPropagation()
+    sidebar.classList.toggle("open")
+    chatContainer.classList.toggle("sidebar-open")
+  })
+}
+
+// Close sidebar when clicking overlay
+if (chatContainer) {
+  chatContainer.addEventListener("click", (e) => {
+    if (chatContainer.classList.contains("sidebar-open") && 
+        !sidebar.contains(e.target) && 
+        !sidebarToggleBtn.contains(e.target)) {
+      sidebar.classList.remove("open")
+      chatContainer.classList.remove("sidebar-open")
+    }
+  })
+}
+
+// Close sidebar when conversation is selected on mobile
+function closeSidebarOnMobile() {
+  if (window.innerWidth <= 768) {
+    sidebar.classList.remove("open")
+    chatContainer.classList.remove("sidebar-open")
+  }
+}

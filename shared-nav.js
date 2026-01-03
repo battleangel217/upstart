@@ -411,5 +411,31 @@ document.head.innerHTML += `
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
       height: 70px;
     }
+    
+    .logo-image {
+      height: 40px;
+      width: auto;
+      object-fit: contain;
+    }
+    
+    @media (max-width: 768px) {
+      .navbar {
+        padding: 8px 12px;
+      }
+      
+      .logo-image {
+        height: 35px;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .navbar {
+        padding: 6px 10px;
+      }
+      
+      .logo-image {
+        height: 30px;
+      }
+    }
   </style>
 `
