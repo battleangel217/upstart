@@ -347,13 +347,6 @@ if (closeBtn) {
   })
 }
 
-// Check authentication
-function checkAuth() {
-  const currentUser = JSON.parse(localStorage.getItem("currentUser"))
-  if (!currentUser) {
-    window.location.href = "login.html"
-  }
-}
 
 // Chat helper function
 function openChat(vendorId) {

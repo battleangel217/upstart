@@ -185,7 +185,6 @@ function loadRecentOrders() {
 }
 
 function openProductModal(product) {
-  // const products = JSON.parse(localStorage.getItem("products")) || []
   // const product = products.find((p) => p.id === productId)
   console.log(product)
 

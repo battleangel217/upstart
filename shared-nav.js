@@ -348,7 +348,7 @@ async function updateCartBadge() {
 }
 
 function updateNotifications() {
-  const currentUser = JSON.parse(localStorage.getItem("currentUser"))
+  const currentUser = JSON.parse(localStorage.getItem("userData"))
   if (!currentUser) return
 
   const notifications = JSON.parse(localStorage.getItem("notifications")) || []
