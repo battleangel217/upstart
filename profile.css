@@ -68,7 +68,7 @@ body {
 /* Main Content */
 .main-content {
   padding: 40px 20px;
-  min-width: 750px;
+  min-width: 1400px;
   margin: 0 auto;
 }
 
@@ -307,16 +307,105 @@ body {
   font-size: 14px;
 }
 
+@media (max-width: 768px) {
+  .main-content {
+    min-width: 0;
+    max-width: 100%;
+    padding: 30px 15px;
+  }
+
+  .profile-container {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .profile-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 16px;
+  }
+
+  .profile-picture {
+    margin: 0 auto;
+  }
+
+  .profile-info-header {
+    align-items: center;
+  }
+
+  .vendor-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    width: 100%;
+  }
+}
+
 @media (max-width: 480px) {
   .main-content {
     padding: 20px 10px;
+    min-width: 0;
+    max-width: 100%;
   }
 
   .profile-card {
     padding: 16px;
   }
 
+  .profile-card h2 {
+    font-size: 18px;
+  }
+
+  .profile-picture {
+    width: 100px;
+    height: 100px;
+  }
+
+  .profile-info-header h1 {
+    font-size: 20px;
+  }
+
+  .role-badge {
+    font-size: 11px;
+    padding: 4px 10px;
+  }
+
+  .form-group label {
+    font-size: 13px;
+  }
+
+  .form-input,
+  .bio-textarea {
+    font-size: 14px;
+  }
+
   .vendor-stats {
     grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .stat-card {
+    padding: 12px;
+  }
+
+  .stat-value {
+    font-size: 20px;
+  }
+
+  .stat-label {
+    font-size: 11px;
+  }
+
+  .btn-primary,
+  .btn-secondary,
+  .cancel-btn {
+    font-size: 14px;
+    padding: 10px 16px;
+  }
+
+  .rating-score span:first-child {
+    font-size: 28px;
   }
 }

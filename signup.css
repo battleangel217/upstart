@@ -243,9 +243,32 @@ select:focus {
   color: var(--accent);
 }
 
+@media (max-width: 768px) {
+  .signup-container {
+    padding: 20px 15px;
+  }
+
+  .signup-card {
+    padding: 35px 25px;
+    margin: 0 auto;
+  }
+}
+
 @media (max-width: 480px) {
+  .signup-container {
+    padding: 15px 10px;
+  }
+
   .signup-card {
     padding: 30px 20px;
+  }
+
+  .logo {
+    margin-bottom: 24px;
+  }
+
+  .logo-image {
+    height: 60px;
   }
 
   .logo h1 {
@@ -254,6 +277,37 @@ select:focus {
 
   h2 {
     font-size: 20px;
+  }
+
+  .subtitle {
+    font-size: 13px;
+  }
+
+  .form-group label {
+    font-size: 13px;
+  }
+
+  .form-group input,
+  .form-group select {
+    font-size: 14px;
+    padding: 11px 14px;
+  }
+
+  .btn-primary {
+    font-size: 14px;
+    padding: 12px;
+  }
+
+  .toggle-link {
+    font-size: 13px;
+  }
+
+  .password-strength-meter {
+    height: 3px;
+  }
+
+  .password-toggle {
+    font-size: 16px;
   }
 }
 

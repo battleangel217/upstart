@@ -413,7 +413,7 @@ document.head.innerHTML += `
     }
     
     .logo-image {
-      height: 40px;
+      height: 50px;
       width: auto;
       object-fit: contain;
     }
@@ -424,7 +424,7 @@ document.head.innerHTML += `
       }
       
       .logo-image {
-        height: 35px;
+        height: 45px;
       }
     }
     
@@ -434,7 +434,7 @@ document.head.innerHTML += `
       }
       
       .logo-image {
-        height: 30px;
+        height: 40px;
       }
     }
   </style>

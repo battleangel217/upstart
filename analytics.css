@@ -305,18 +305,69 @@ canvas {
 }
 
 @media (max-width: 768px) {
+  .main-content {
+    min-width: 0;
+    max-width: 100%;
+    padding: 30px 15px;
+  }
+
+  .analytics-container {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .analytics-container h1 {
+    font-size: 22px;
+  }
+
   .charts-grid {
     grid-template-columns: 1fr;
+  }
+
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
 }
 
 @media (max-width: 480px) {
   .main-content {
     padding: 20px 10px;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .analytics-container h1 {
+    font-size: 20px;
   }
 
   .kpi-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr;
+  }
+
+  .kpi-card {
+    padding: 16px;
+  }
+
+  .kpi-value {
+    font-size: 24px;
+  }
+
+  .kpi-label {
+    font-size: 12px;
+  }
+
+  .chart-card {
+    padding: 16px;
+  }
+
+  .chart-card h3 {
+    font-size: 16px;
   }
 
   .analytics-table {
@@ -325,6 +376,6 @@ canvas {
 
   .analytics-table th,
   .analytics-table td {
-    padding: 8px;
+    padding: 6px;
   }
 }
