@@ -108,7 +108,7 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
   const loginInfo = {email, password};
 
   try {
-    const response = await fetch('http://127.0.0.1:8000//auth/jwt/create/', {
+    const response = await fetch('http://127.0.0.1:8000/auth/jwt/create/', {
       method: "POST",
       headers: {"Content-Type":"application/json"},
       body: JSON.stringify(loginInfo)
@@ -126,8 +126,8 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
 
     const data = await response.json();
     // optional: store token / user info here if you want
-    if (data && (data.access || data.token)) {
-      localStorage.setItem('authToken', data.access || data.refresh);
+    if (data) {
+      localStorage.setItem('userData', JSON.stringify(data));
     }
 
     // Success

@@ -1,10 +1,10 @@
 function checkAuth() {
-  const currentUser = JSON.parse(localStorage.getItem("currentUser"))
+  const currentUser = JSON.parse(localStorage.getItem("userData"))
   if (!currentUser) {
     window.location.href = "login.html"
     return null
   }
-  if (currentUser.role !== "vendor") {
+  if (currentUser.user.role !== "vendor") {
     alert("Only vendors can access analytics")
     window.location.href = "index.html"
     return null
@@ -12,38 +12,45 @@ function checkAuth() {
   return currentUser
 }
 
-function loadAnalytics() {
+async function loadAnalytics() {
   const currentUser = checkAuth()
   if (!currentUser) return
 
-  const products = JSON.parse(localStorage.getItem("products")) || []
-  const vendors = JSON.parse(localStorage.getItem("vendors")) || []
-  const vendor = vendors.find((v) => v.id === currentUser.id)
+  try{
+    const response = await fetch('http://127.0.0.1:8000/analytics/overview/',
+      {
+        method: "GET",
+        headers: {
+          "Content-Type":"application/json",
+          "Authorization":`Bearer ${currentUser.access}`
+        }
+      });
+    
+    const data = await response.json();
 
-  const vendorProducts = products.filter((p) => p.vendorId === currentUser.id)
+    document.getElementById("totalSales").textContent = data.total_sales_quantity
+    document.getElementById("totalRevenue").textContent = data.total_revenue
+    document.getElementById("totalViews").textContent = data.total_views
+    document.getElementById("avgRating").textContent = (data.rating || 0).toFixed(1)
+    document.getElementById("ratingStars").textContent =
+      "★".repeat(Math.round(data.rating || 0)) + "☆".repeat(5 - Math.round(data.rating || 0))
+    document.getElementById("productCount").textContent = data.active_products_count
 
-  // Calculate metrics
-  const totalViews = vendorProducts.reduce((sum, p) => sum + (p.viewCount || 0), 0)
-  const totalRevenue = vendorProducts.reduce((sum, p) => sum + p.price * (Math.random() * 20 + 1), 0)
-  const totalSales = Math.floor(totalRevenue / 50)
+  }catch(error){
+    alert("Can't connect to server")
+  }
 
-  document.getElementById("totalSales").textContent = totalSales
-  document.getElementById("totalRevenue").textContent = totalRevenue.toFixed(2)
-  document.getElementById("totalViews").textContent = totalViews
-  document.getElementById("avgRating").textContent = (vendor?.averageRating || 0).toFixed(1)
-  document.getElementById("ratingStars").textContent =
-    "★".repeat(Math.round(vendor?.averageRating || 0)) + "☆".repeat(5 - Math.round(vendor?.averageRating || 0))
-  document.getElementById("productCount").textContent = vendorProducts.length
+  
 
   // Draw charts
-  drawSalesChart()
-  drawCategoryChart(vendorProducts)
+  // drawSalesChart()
+  // drawCategoryChart()
 
-  // Load top products
-  loadTopProducts(vendorProducts)
+  // // Load top products
+  loadTopProducts()
 
-  // Load recent orders
-  loadRecentOrders()
+  // // Load recent orders
+  // loadRecentOrders()
 }
 
 function drawSalesChart() {
@@ -65,54 +72,83 @@ function drawSalesChart() {
   })
 }
 
-function drawCategoryChart(products) {
-  const canvas = document.getElementById("categoryCanvas")
-  const ctx = canvas.getContext("2d")
+// async function drawCategoryChart() {
+//   const canvas = document.getElementById("categoryCanvas")
+//   const ctx = canvas.getContext("2d")
 
-  // Count products by category
-  const categories = {}
-  products.forEach((p) => {
-    categories[p.category] = (categories[p.category] || 0) + 1
-  })
+//   const response = await fetch('http://127.0.0.1:8000/products/',{
+//       method: "GET",
+//       headers: {"Content-Type":"application/json"}
+//     });
 
-  const categoryNames = Object.keys(categories)
-  const categoryValues = Object.values(categories)
-  const maxValue = Math.max(...categoryValues, 1)
+//     if (!response.ok){
+//       const error = await response.json()
+//       console.log(error)
+//     }
 
-  ctx.fillStyle = "#F4F6FA"
-  ctx.fillRect(0, 0, canvas.width, canvas.height)
+//     const products = await response.json();
 
-  categoryNames.forEach((name, index) => {
-    const barHeight = (categoryValues[index] / maxValue) * (canvas.height * 0.8)
-    const colors = ["#1C6EF2", "#FFB800", "#4AD77C", "#FF4D4D", "#6B7280"]
-    ctx.fillStyle = colors[index % colors.length]
-    ctx.fillRect(
-      index * (canvas.width / categoryNames.length) + 5,
-      canvas.height - barHeight - 20,
-      canvas.width / categoryNames.length - 10,
-      barHeight,
-    )
-  })
-}
+//   // Count products by category
+//   const categories = {}
+//   products.forEach((p) => {
+//     categories[p.category] = (categories[p.category] || 0) + 1
+//   })
 
-function loadTopProducts(products) {
-  const sorted = [...products].sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0)).slice(0, 5)
-  const tbody = document.getElementById("topProductsTable")
+//   const categoryNames = Object.keys(categories)
+//   const categoryValues = Object.values(categories)
+//   const maxValue = Math.max(...categoryValues, 1)
 
-  tbody.innerHTML = sorted
-    .map((product) => {
-      const sales = Math.floor(Math.random() * 20) + 1
-      const revenue = (product.price * sales).toFixed(2)
-      return `
-            <tr onclick="openProductModal(${product.id})">
-                <td><span class="table-product-name">${product.name}</span></td>
-                <td><span class="stat-number">${product.viewCount || 0}</span></td>
-                <td><span class="stat-number">${sales}</span></td>
-                <td><span class="revenue">$${revenue}</span></td>
-            </tr>
-        `
-    })
-    .join("")
+//   ctx.fillStyle = "#F4F6FA"
+//   ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+//   categoryNames.forEach((name, index) => {
+//     const barHeight = (categoryValues[index] / maxValue) * (canvas.height * 0.8)
+//     const colors = ["#1C6EF2", "#FFB800", "#4AD77C", "#FF4D4D", "#6B7280"]
+//     ctx.fillStyle = colors[index % colors.length]
+//     ctx.fillRect(
+//       index * (canvas.width / categoryNames.length) + 5,
+//       canvas.height - barHeight - 20,
+//       canvas.width / categoryNames.length - 10,
+//       barHeight,
+//     )
+//   })
+// }
+
+async function loadTopProducts() {
+  const currentUser = JSON.parse(localStorage.getItem("userData"))
+  try{
+    const response = await fetch('http://127.0.0.1:8000/analytics/top-products-vendor/',
+      {
+        method: "GET",
+        headers: {
+          "Content-Type":"application/json",
+          "Authorization":`Bearer ${currentUser.access}`
+        }
+      });
+    const sorted = await response.json();
+    console.log(sorted)
+
+    const tbody = document.getElementById("topProductsTable")
+
+    tbody.innerHTML = sorted
+      .map((product) => {
+        const sales = Math.floor(Math.random() * 20) + 1
+        // const revenue = (product.unit_price * sales).toFixed(2)
+        return `
+              <tr onclick="openProductModal(${JSON.stringify(product).replace(/"/g, '&quot;')})">
+                  <td><span class="table-product-name">${product.product_name}</span></td>
+                  <td><span class="stat-number">${product.view_count || 0}</span></td>
+                  <td><span class="stat-number">${product.units_sold}</span></td>
+                  <td><span class="revenue">$${product.revenue}</span></td>
+              </tr>
+          `
+      })
+      .join("")
+
+  }catch(error){
+    alert("Can't connect to server", error)
+  }
+  
 }
 
 function loadRecentOrders() {
@@ -148,20 +184,21 @@ function loadRecentOrders() {
     .join("")
 }
 
-function openProductModal(productId) {
-  const products = JSON.parse(localStorage.getItem("products")) || []
-  const product = products.find((p) => p.id === productId)
+function openProductModal(product) {
+  // const products = JSON.parse(localStorage.getItem("products")) || []
+  // const product = products.find((p) => p.id === productId)
+  console.log(product)
 
   if (!product) return
 
   const html = `
         <div style="padding: 32px;">
-            <img src="${product.images[0]}" style="width: 100%; border-radius: 12px; margin-bottom: 16px;">
-            <h2 style="font-size: 20px; margin-bottom: 8px;">${product.name}</h2>
-            <div style="font-size: 24px; color: var(--accent); font-weight: 700; margin-bottom: 16px;">$${product.price}</div>
+            <img src="${product.image_url[0]}" style="width: 100%; border-radius: 12px; margin-bottom: 16px;">
+            <h2 style="font-size: 20px; margin-bottom: 8px;">${product.product_name}</h2>
+            <div style="font-size: 24px; color: var(--accent); font-weight: 700; margin-bottom: 16px;">$${product.unit_price}</div>
             <p style="color: var(--text-secondary); margin-bottom: 16px;">${product.description}</p>
             <div style="background: var(--secondary); padding: 16px; border-radius: 8px;">
-                <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 8px;">Views: <strong>${product.viewCount || 0}</strong></div>
+                <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 8px;">Views: <strong>${product.view_count || 0}</strong></div>
                 <div style="font-size: 12px; color: var(--text-secondary);">Available: <strong>${product.quantity}</strong></div>
             </div>
         </div>

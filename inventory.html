@@ -14,12 +14,35 @@
         <div class="inventory-container">
             <div class="inventory-header">
                 <h1>My Inventory</h1>
-                <button class="btn-primary fab" id="addProductBtn">+ Add Product</button>
+                <div style="display: flex; gap: 20px;">
+                    <button class="btn-primary fab" id="addProductBtn">+ Add Product</button>
+                    <button class="btn-primary fab" id="uploadContentBtn" style="background-color: var(--primary); display: none;">+ Add Content</button>
+                </div>
             </div>
 
-            <div class="products-grid" id="productsGrid">
-                <!-- Products will be inserted here -->
+            <!-- Tabs for Inventory and Content -->
+            <div class="tabs-bar">
+                <button class="tab-btn active" id="tabInventory">Inventory</button>
+                <button class="tab-btn" id="tabContent">Content</button>
             </div>
+
+            <!-- Inventory section (default visible) -->
+            <section id="inventorySection">
+                <div class="products-grid" id="productsGrid">
+                    <!-- Products will be inserted here -->
+                </div>
+            </section>
+
+            <!-- Content section (hidden by default) -->
+            <section id="contentSection" class="hidden">
+                <div class="contents-grid" id="contentsGrid">
+                    <!-- Content items (videos/posts) will be inserted here -->
+                    <div class="empty-inventory" style="grid-column: 1/-1;">
+                        <div class="empty-icon">🎬</div>
+                        <p class="empty-text">No content yet. Click "+ Add Content" to add your first piece of content.</p>
+                    </div>
+                </div>
+            </section>
         </div>
     </main>
 
@@ -41,10 +64,10 @@
                     </div>
 
                     <div class="form-row">
-                        <div class="form-group">
+                        <!-- <div class="form-group">
                             <label>Color *</label>
                             <input type="text" id="productColor" required placeholder="e.g., Black, Red">
-                        </div>
+                        </div> -->
                         <div class="form-group">
                             <label>Price ($) *</label>
                             <input type="number" id="productPrice" required placeholder="0.00" step="0.01" min="0">
@@ -69,26 +92,28 @@
                         </div>
                     </div>
 
-                    <div class="form-group">
+                    <!-- <div class="form-group">
                         <label>Location *</label>
                         <input type="text" id="productLocation" required placeholder="Where to pick up">
-                    </div>
+                    </div> -->
 
                     <div class="form-group">
-                        <label>Product Image</label>
+                        <label>Product Images</label>
                         <div class="image-upload" onclick="document.getElementById('productImage').click()">
-                            <input type="file" id="productImage" accept="image/*">
-                            <div class="upload-placeholder">📸 Click to upload or drag and drop</div>
+                            <input type="file" id="productImage" accept="image/*" multiple>
+                            <div class="upload-placeholder">📸 Click to upload or drag and drop (you can select multiple images)</div>
                         </div>
+                        <!-- Preview thumbnails for selected images -->
+                        <div id="imagePreviewContainer" class="image-preview-container" aria-live="polite"></div>
                     </div>
 
-                    <div class="form-group">
+                    <!-- <div class="form-group">
                         <label>Product Video (Optional)</label>
                         <div class="video-upload" onclick="document.getElementById('productVideo').click()">
                             <input type="file" id="productVideo" accept="video/*">
                             <div class="upload-placeholder">🎥 Upload a demo video (MP4, WebM)</div>
                         </div>
-                    </div>
+                    </div> -->
 
                     <div class="form-actions">
                         <button type="submit" class="btn-primary">Add Product</button>
@@ -118,10 +143,6 @@
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Color</label>
-                            <input type="text" id="editProductColor" required>
-                        </div>
-                        <div class="form-group">
                             <label>Price ($)</label>
                             <input type="number" id="editProductPrice" required step="0.01" min="0">
                         </div>
@@ -146,7 +167,7 @@
 
                     <div class="form-group">
                         <label>Location</label>
-                        <input type="text" id="editProductLocation" required>
+                        <input type="text" id="editProductLocation" disabled>
                     </div>
 
                     <div class="view-count-display">
@@ -163,9 +184,44 @@
         </div>
     </div>
 
+    <div class="modal-overlay" id="uploadContentModal">
+        <div class="modal-content">
+            <button class="modal-close" id="closeUploadContentModal">✕</button>
+            <div class="modal-body">
+                <h2>Add Content</h2>
+                <form id="uploadModalForm">
+                    <!-- <div class="form-group">
+                        <label>Content Title</label>
+                        <input type="text" id="contentTitle" required placeholder="Enter your Content Title">
+                    </div> -->
+                    <div class="form-group">
+                        <label>Caption</label>
+                        <textarea id="caption" required rows="4" placeholder="Describe your content"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Content Video</label>
+                        <div class="video-upload" onclick="document.getElementById('contentVideo').click()">
+                            <input type="file" id="contentVideo" accept="video/*">
+                            <div class="upload-placeholder">🎥 Upload a video (MP4, WebM)</div>
+                        </div>
+                        <!-- Preview container for the selected content video (only one allowed) -->
+                        <div id="contentVideoPreview" class="video-preview-container" aria-live="polite"></div>
+                    </div>
+
+                     <div class="form-actions">
+                        <button type="submit" class="btn-primary">Upload Content</button>
+                        <button type="button" class="btn-secondary cancel-btn" id="cancelUploadBtn">Close</button>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+    </div>
+
     <!-- Added shared nav and main JS scripts -->
     <script src="shared-nav.js"></script>
-    <script src="data-initializer.js"></script>
+    <!-- <script src="data-initializer.js"></script> -->
     <script src="video-viewer.js"></script>
     <script src="inventory.js"></script>
 </body>

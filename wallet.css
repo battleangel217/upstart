@@ -68,7 +68,7 @@ body {
 /* Main Content */
 .main-content {
   padding: 40px 20px;
-  max-width: 600px;
+  min-width: 1400px;
   margin: 0 auto;
 }
 
@@ -333,9 +333,25 @@ body {
   margin-top: 10px;
 }
 
+@media (max-width: 768px) {
+  /* Ensure main content can shrink on tablets/phones and avoid horizontal overflow */
+  .main-content {
+    padding: 20px 10px;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .wallet-container {
+    width: 100%;
+  }
+}
+
 @media (max-width: 480px) {
   .main-content {
     padding: 20px 10px;
+    /* reset desktop min-width to prevent mobile overflow */
+    min-width: 0;
+    width: 100%;
   }
 
   .drawer {

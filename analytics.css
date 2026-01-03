@@ -68,7 +68,7 @@ body {
 /* Main Content */
 .main-content {
   padding: 40px 20px;
-  max-width: 1200px;
+  min-width: 1400px;
   margin: 0 auto;
 }
 
@@ -148,6 +148,7 @@ body {
 
 canvas {
   max-width: 100%;
+  min-width: 100%;
 }
 
 /* Analytics Card */
@@ -298,6 +299,9 @@ canvas {
   cursor: pointer;
   font-size: 18px;
   z-index: 10;
+}
+.product-details-container {
+  grid-template-columns: none;
 }
 
 @media (max-width: 768px) {

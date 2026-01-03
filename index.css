@@ -39,7 +39,7 @@ body {
   top: 0;
   left: 0;
   right: 0;
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--secondary);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--border);
   z-index: 100;
@@ -71,11 +71,58 @@ body {
   font-weight: 700;
   color: var(--primary);
   font-size: 18px;
+  width: 144px;
+  height: 48px;
+  overflow: hidden;
 }
 
 .logo-icon {
   font-size: 20px;
   color: var(--accent);
+}
+
+/* Logo image sizing */
+.logo-image {
+  height: 140px; /* larger navbar logo */
+  width: auto;
+  display: block;
+  object-fit: cover;
+  object-position: 30% 40%;
+}
+
+/* Larger logo for auth pages */
+.login-card .logo .logo-image,
+.signup-card .logo .logo-image {
+  height: 110px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 800px) {
+  .logo-image {
+   height: 120px;
+    width: 125px;
+  }
+  .login-card .logo .logo-image,
+  .signup-card .logo .logo-image {
+    height: 88px;
+  }
+}
+
+/* Larger mobile logo and prevent cropping on small screens */
+@media (max-width: 480px) {
+  .logo {
+    /* allow the logo container to grow so larger image isn't cropped */
+    width: auto;
+    height: auto;
+    overflow: visible;
+  }
+  .logo-image {
+    height: 88px; /* larger on phones so it remains visible */
+  }
+  .login-card .logo .logo-image,
+  .signup-card .logo .logo-image {
+    height: 100px;
+  }
 }
 
 .navbar-center {
@@ -133,7 +180,7 @@ body {
   color: var(--text-primary);
   text-decoration: none;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 14px;
   transition: color 0.3s ease;
 }
 
@@ -159,7 +206,7 @@ body {
 
 .wallet-balance {
   font-weight: 600;
-  color: var(--primary);
+  color: white;
 }
 
 /* Dropdowns */
@@ -295,12 +342,16 @@ body {
 
 /* Main Content */
 .main-content {
-  padding: 40px 20px;
-  max-width: 1400px;
+  padding: 40px 0;
+  flex: 1;
+}
+
+.container {
+  max-width: 1600px;
   margin-left: auto;
   margin-right: auto;
-  /* allow the main content to grow and push footer to bottom */
-  flex: 1;
+  padding-left: 20px;
+  padding-right: 20px;
 }
 
 /* Category Filter */
@@ -1022,7 +1073,8 @@ body {
 }
 
 .comments-list {
-  max-height: 200px;
+  /* Increased height to show more comments before scrolling */
+  max-height: 400px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -1063,6 +1115,8 @@ body {
 .comment-input-area {
   display: flex;
   gap: 8px;
+  /* Align start so taller textarea doesn't center the button vertically */
+  align-items: flex-start;
 }
 
 .video-comment-input {
@@ -1071,6 +1125,9 @@ body {
   border: 1px solid var(--border);
   border-radius: 8px;
   font-size: 13px;
+  /* Make the comment input taller and resizable vertically */
+  min-height: 66px;
+  resize: vertical;
 }
 
 .video-comment-input:focus {
@@ -1400,6 +1457,16 @@ body {
     gap: 16px;
   }
 
+  /* Ensure products section sizing works on tablets/phones */
+  .products-section {
+    /* reset desktop min-width to prevent mobile overflow */
+    min-width: 0;
+    max-width: 100%;
+    margin-bottom: 40px;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
   .product-details-container {
     grid-template-columns: 1fr;
     gap: 20px;
@@ -1507,6 +1574,16 @@ body {
     gap: 12px;
   }
 
+  /* Make products section full-width-friendly on small phones */
+  .products-section {
+    /* reset desktop min-width to prevent mobile overflow */
+    min-width: 0;
+    max-width: 100%;
+    margin-bottom: 32px;
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
   .filter-container {
     gap: 8px;
   }
@@ -1514,6 +1591,16 @@ body {
   .filter-btn {
     padding: 8px 12px;
     font-size: 12px;
+  }
+
+  /* Desktop-only wide layout: apply min-width only on very large viewports so tablets don't overflow */
+}
+
+@media (min-width: 1400px) {
+  .products-section {
+    min-width: 1400px;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   /* Mobile video viewer optimizations */

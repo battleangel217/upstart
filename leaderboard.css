@@ -68,7 +68,7 @@ body {
 /* Main Content */
 .main-content {
   padding: 40px 20px;
-  max-width: 1000px;
+  min-width: 1400px;
   margin: 0 auto;
 }
 
@@ -411,6 +411,9 @@ body {
   z-index: 10;
 }
 
+.product-details-container {
+  grid-template-columns: none;
+}
 @media (max-width: 480px) {
   .main-content {
     padding: 20px 10px;

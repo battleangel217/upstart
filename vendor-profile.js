@@ -1,57 +1,87 @@
 const params = new URLSearchParams(window.location.search)
 const vendorId = Number.parseInt(params.get("vendorId"))
 
-function loadVendorProfile() {
-  const vendors = JSON.parse(localStorage.getItem("vendors")) || []
-  const vendor = vendors.find((v) => v.id === vendorId)
+async function loadVendorProfile() {
+  const currentUser = JSON.parse(localStorage.getItem('userData'))
+  try{
+    const response = await fetch(`http://127.0.0.1:8000/auth/user/${vendorId}`,{
+      method: "GET",
+      headers: {
+        "Content-Type":"application/json",
+        "Authorization":`Bearer ${currentUser.access}`
+      }
+    })
+    const vendor = await response.json()
 
-  if (!vendor) {
-    alert("Vendor not found")
-    window.location.href = "index.html"
-    return
+    document.getElementById("vendorName").textContent = vendor.info.username
+    document.getElementById("vendorUniversity").textContent = vendor.info.institute
+    // document.getElementById("vendorDepartment").textContent = vendor.department
+    // Contact details and bio
+    document.getElementById("vendorEmail").textContent = vendor.info.email
+    document.getElementById("vendorPhone").textContent = vendor.info.phone
+    document.getElementById("vendorBio").textContent = vendor.info.bio
+    document.getElementById("vendorImage").src = vendor.info.profile_url || "/placeholder.svg?height=120&width=120"
+    document.getElementById("totalSales").textContent = vendor.sales || 0
+    document.getElementById("avgRating").textContent = (vendor.info.rating || 0).toFixed(1)
+    document.getElementById("vendorRating").textContent =
+      "★".repeat(Math.round(vendor.info.rating || 0)) + "☆".repeat(5 - Math.round(vendor.info.rating || 0))
+    // document.getElementById("reviewCount").textContent = `(${vendor.reviews || 0} reviews)`
+
+    loadVendorProducts(vendorId)
+    loadVendorVideos()
+  }catch(error){
+    console.log(error)
   }
 
-  document.getElementById("vendorName").textContent = vendor.name
-  document.getElementById("vendorUniversity").textContent = vendor.university
-  document.getElementById("vendorDepartment").textContent = vendor.department
-  document.getElementById("vendorImage").src = vendor.profilePicture || "/placeholder.svg?height=120&width=120"
-  document.getElementById("totalSales").textContent = vendor.totalSales || 0
-  document.getElementById("avgRating").textContent = (vendor.averageRating || 0).toFixed(1)
-  document.getElementById("vendorRating").textContent =
-    "★".repeat(Math.round(vendor.averageRating || 0)) + "☆".repeat(5 - Math.round(vendor.averageRating || 0))
-  document.getElementById("reviewCount").textContent = `(${vendor.reviews || 0} reviews)`
+  // if (!vendor) {
+  //   alert("Vendor not found")
+  //   window.location.href = "index.html"
+  //   return
+  // }
 
-  loadVendorProducts()
-  loadVendorVideos()
+  
 }
 
-function loadVendorProducts() {
-  const products = JSON.parse(localStorage.getItem("products")) || []
-  const vendorProducts = products.filter((p) => p.vendorId === vendorId)
+async function loadVendorProducts(vendorId) {
+  const currentUser = JSON.parse(localStorage.getItem('userData'))
+  try{
+    const response = await fetch(`http://127.0.0.1:8000/products/vendor-products/${vendorId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type":"application/json",
+        "Authorization":`Bearer ${currentUser.access}`
+      }
+    })
+    const vendorProducts = await response.json()
+    document.getElementById("productCount").textContent = vendorProducts.length
 
-  document.getElementById("productCount").textContent = vendorProducts.length
+    const grid = document.getElementById("productsGrid")
 
-  const grid = document.getElementById("productsGrid")
+    if (vendorProducts.length === 0) {
+      grid.innerHTML =
+        '<p style="grid-column: 1/-1; text-align: center; color: var(--text-secondary); padding: 40px;">No products listed yet</p>'
+      return
+    }
 
-  if (vendorProducts.length === 0) {
-    grid.innerHTML =
-      '<p style="grid-column: 1/-1; text-align: center; color: var(--text-secondary); padding: 40px;">No products listed yet</p>'
-    return
-  }
-
-  grid.innerHTML = vendorProducts
+    
+    grid.innerHTML = vendorProducts
     .map(
       (product) => `
-        <div class="product-card" onclick="openProductModal(${product.id})">
-            <img src="${product.images[0]}" alt="${product.name}" class="product-image">
-            <div class="product-card-body">
-                <div class="product-card-name">${product.name}</div>
-                <div class="product-card-price">$${product.price}</div>
-            </div>
-        </div>
-    `,
-    )
-    .join("")
+          <div class="product-card" onclick="openProductModal(${product.id})">
+              <img src="${product.image_url[0]}" alt="${product.product_name}" class="product-image">
+              <div class="product-card-body">
+                  <div class="product-card-name">${product.product_name}</div>
+                  <div class="product-card-price">$${product.price}</div>
+              </div>
+          </div>
+      `,
+      )
+      .join("")
+  }catch(error){
+
+  }
+
+  
 }
 
 function loadVendorVideos() {
@@ -107,32 +137,65 @@ function loadVendorVideos() {
   })
 }
 
-function openProductModal(productId) {
-  const products = JSON.parse(localStorage.getItem("products")) || []
-  const product = products.find((p) => p.id === productId)
+async function openProductModal(productId) {
+  const currentUser = JSON.parse(localStorage.getItem('userData'))
+  const headers = {
+    "Content-Type": "application/json"
+  };
+  
+  if (currentUser) {
+    headers["Authorization"] = `Bearer ${currentUser.access}`;
+  }
+  const response = await fetch(`http://127.0.0.1:8000/products/${productId}`,
+    {
+      method: "GET",
+      headers
+    }
+  )
+
+  const product = await response.json();
 
   if (!product) return
 
   document.getElementById("productName").textContent = product.name
   document.getElementById("productPrice").textContent = `$${product.price}`
   document.getElementById("productDescription").textContent = product.description
-  document.getElementById("productColor").textContent = product.color
-  document.getElementById("productLocation").textContent = product.location
+  document.getElementById("productLocation").textContent = product.institute
   document.getElementById("quantityAvailable").textContent = product.quantity
-  document.getElementById("galleryMainImage").src = product.images[0]
+  document.getElementById("galleryMainImage").src = product.image_url[0]
 
-  document.getElementById("addToCartBtn").onclick = () => {
-    const cart = JSON.parse(localStorage.getItem("cart")) || []
-    const existingItem = cart.find((item) => item.productId === productId)
+  document.getElementById("addToCartBtn").onclick = async () => {
+    const userData = JSON.parse(localStorage.getItem("userData"));
 
-    if (existingItem) {
-      existingItem.quantity += 1
-    } else {
-      cart.push({ productId, quantity: 1 })
+    if(!userData) {
+      window.location.href = "login.html";
     }
 
-    localStorage.setItem("cart", JSON.stringify(cart))
-    alert("Product added to cart!")
+    try{
+      const response = await fetch(`http://127.0.0.1:8000/cart/cart-items/${productId}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type":"application/json",
+            "Authorization": `Bearer ${userData.access}`
+          }
+      });
+
+      if (!response.ok){
+        if(response.status === 401){
+          window.location.href = "login.html";
+        }
+        return;
+      }
+      alert(`Added to cart!`);
+      // Update cart badge
+      const badge = document.getElementById("cartBadge")
+      if (badge) {
+        badge.textContent ++;
+      }
+    }catch(error){
+
+    }
     closeProductModal()
   }
 

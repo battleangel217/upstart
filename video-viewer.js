@@ -54,7 +54,7 @@ function createVideoViewerModal() {
 
         <!-- Add Comment -->
         <div class="comment-input-area">
-          <input type="text" id="videoCommentInput" placeholder="Add a comment..." class="video-comment-input">
+          <textarea id="videoCommentInput" placeholder="Add a comment..." class="video-comment-input" rows="3"></textarea>
           <button class="comment-submit-btn" onclick="submitVideoComment()">Post</button>
         </div>
 
@@ -64,18 +64,10 @@ function createVideoViewerModal() {
             <span>Views:</span>
             <span id="videoViewCount">0</span>
           </div>
-          <div class="stat-row">
-            <span>Price:</span>
-            <span id="videoPrice">$0</span>
-          </div>
-          <div class="stat-row">
-            <span>Available:</span>
-            <span id="videoQuantity">0</span>
-          </div>
+
         </div>
 
         <!-- Add to Cart from Video -->
-        <button class="video-add-to-cart-btn" onclick="addToCartFromVideo()">Add to Cart</button>
       </div>
 
       <!-- Video Counter -->
@@ -93,12 +85,10 @@ function displayCurrentVideo() {
   const video = allVideos[currentVideoIndex]
   const player = document.getElementById("mainVideoPlayer")
 
-  player.src = video.videoUrl
-  document.getElementById("videoProductName").textContent = video.name
-  document.getElementById("videoLikeCount").textContent = video.likes || 0
+  player.src = video.video
+  document.getElementById("videoProductName").textContent = video.caption
+  document.getElementById("videoLikeCount").textContent = video.likes_count
   document.getElementById("videoViewCount").textContent = video.viewCount || 0
-  document.getElementById("videoPrice").textContent = `$${video.price}`
-  document.getElementById("videoQuantity").textContent = video.quantity || 0
   document.getElementById("videoCounter").textContent = `${currentVideoIndex + 1} / ${allVideos.length}`
 
   // Update like button state
@@ -206,7 +196,28 @@ function closeVideoViewer() {
   if (modal) {
     modal.classList.remove("active")
   }
+
+  // Ensure the main video is paused and unloaded so it doesn't keep playing
+  // in the background after the modal is closed.
+  const player = document.getElementById("mainVideoPlayer")
+  if (player) {
+    try {
+      // Pause playback
+      player.pause()
+      // Reset playback position
+      try { player.currentTime = 0 } catch (e) { /* may throw on some browsers if not loaded */ }
+
+      // Remove src and any child <source> elements to stop network activity
+      player.removeAttribute('src')
+      while (player.firstChild) player.removeChild(player.firstChild)
+      // Force the element to reload/stop
+      player.load()
+    } catch (err) {
+      console.warn('Error while stopping video playback:', err)
+    }
+  }
 }
+
 
 function addToCartFromVideo() {
   const video = allVideos[currentVideoIndex]

@@ -68,7 +68,7 @@ body {
 /* Main Content */
 .main-content {
   padding: 40px 20px;
-  max-width: 600px;
+  min-width: 750px;
   margin: 0 auto;
 }
 
@@ -179,6 +179,16 @@ body {
 
 .form-input:not(:disabled) {
   background: var(--white);
+}
+
+/* Bio textarea specific styles */
+.bio-textarea {
+  resize: vertical;
+  min-height: 88px;
+  max-height: 300px;
+  padding: 10px 12px;
+  line-height: 1.4;
+  font-family: inherit;
 }
 
 /* Buttons */

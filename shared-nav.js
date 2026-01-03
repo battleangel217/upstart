@@ -1,25 +1,6 @@
 // Shared navigation component for all pages
- async function initializeNavigation() {
-  const authToken = JSON.parse(localStorage.getItem("authToken"));
-  if(!authToken) return;
-  try {
-    const response = await fetch('http://127.0.0.1:8000/auth/users/me/',
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${authToken.access}`
-        },
-      });
-
-    if (response.ok) {
-
-    }
-    const userInfo = response.json();
-    localStorage.setItem("userInfo", userInfo);
-  } catch (error) {
-    console.log(error);
-  }
+async function initializeNavigation() {
+  const userData = localStorage.getItem("userData")
 
 
   // Only create navbar if it doesn't exist
@@ -37,8 +18,7 @@
             ☰
           </button>
           <a href="index.html" class="logo" title="Home">
-            <span class="logo-icon">↑</span>
-            <span class="logo-text">Upstart</span>
+            <img src="https://icuklzexzhusblkzglnr.supabase.co/storage/v1/object/public/marketplace/logo/Upstart-removebg-preview.png" alt="Upstart" class="logo-image">
           </a>
         </div>
 
@@ -69,8 +49,12 @@
             </a>
           </div>
           <div class="navbar-item wallet-item">
-            <a href="wallet.html" class="nav-link" title="Wallet">
-              💰 <span class="wallet-balance" id="walletBalance">$0</span>
+            <a href="wallet.html" class="nav-link" title="Wallet" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: var(--accent); color: white; border-radius: 8px; text-decoration: none; font-weight: 500;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+              <line x1="1" y1="10" x2="23" y2="10"></line>
+            </svg>
+              <span class="wallet-balance" id="walletBalance">$0</span>
             </a>
           </div>
           <div class="navbar-item">
@@ -93,7 +77,7 @@
               👤
             </button>
             <div class="profile-dropdown" id="profileDropdown">
-              <a href="profile.html" class="dropdown-item">View Profile</a>
+              <a href="profile.html" class="dropdown-item" id="viewProfile">View Profile</a>
               <a href="inventory.html" class="dropdown-item vendor-only" style="display:none;" id="inventoryLink">My Inventory</a>
               <a href="chat.html" class="dropdown-item">Messages</a>
               <a href="#" class="dropdown-item logout-item" id="logoutBtn">Logout</a>
@@ -186,7 +170,7 @@ function initializeNavbarEvents() {
   if (logoutBtn) {
     logoutBtn.addEventListener("click", (e) => {
       e.preventDefault()
-      localStorage.setItem("authToken", JSON.stringify(null))
+      localStorage.removeItem("userData");
       window.location.href = "login.html"
     })
   }
@@ -196,12 +180,13 @@ function initializeNavbarEvents() {
   if (mobileLogoutBtn) {
     mobileLogoutBtn.addEventListener("click", (e) => {
       e.preventDefault()
-      localStorage.setItem("authToken", JSON.stringify(null))
+      localStorage.removeItem("userData");
       window.location.href = "login.html"
     })
   }
 
   // Update vendor menu visibility
+  
   updateVendorMenu()
   updateWalletBalance()
   updateCartBadge()
@@ -211,7 +196,7 @@ function initializeNavbarEvents() {
 }
 
 function updateAuthControls() {
-  const currentUser = JSON.parse(localStorage.getItem("authToken"))
+  const currentUser = JSON.parse(localStorage.getItem("userData"))
 
   const authControls = document.getElementById("authControls")
   const navbarItems = Array.from(document.querySelectorAll('.navbar-right > .navbar-item'))
@@ -222,7 +207,9 @@ function updateAuthControls() {
   if (!currentUser) {
     // Hide desktop and mobile items except the auth container
     navbarItems.forEach((el) => {
-      if (el.id !== 'authControls') el.style.display = 'none'
+      // keep the authControls container and any item that links to the leaderboard visible
+      const hasLeaderboardLink = el.querySelector && el.querySelector('a[href="leaderboard.html"]')
+      if (el.id !== 'authControls' && !hasLeaderboardLink) el.style.display = 'none'
     })
 
     // Populate auth controls with Login / Signup buttons
@@ -234,7 +221,14 @@ function updateAuthControls() {
 
     // Mobile menu: hide existing items and show login/signup
     if (mobileMenu) {
-      Array.from(mobileMenu.querySelectorAll('.mobile-menu-item')).forEach((el) => el.style.display = 'none')
+      // Hide mobile items except the leaderboard so unauthenticated users can still access it
+      Array.from(mobileMenu.querySelectorAll('.mobile-menu-item')).forEach((el) => {
+        if (el.getAttribute && el.getAttribute('href') === 'leaderboard.html') {
+          el.style.display = 'flex'
+        } else {
+          el.style.display = 'none'
+        }
+      })
       // add mobile auth items if not already present
       if (!document.getElementById('mobileLoginItem')) {
         const loginItem = document.createElement('a')
@@ -280,13 +274,14 @@ function updateAuthControls() {
 }
 
 function updateVendorMenu() {
-  const currentUser = JSON.parse(localStorage.getItem("currentUser"))
+  const currentUser = JSON.parse(localStorage.getItem("userData"))
   const inventoryLink = document.getElementById("inventoryLink")
   const analyticsLink = document.getElementById("analyticsLink")
   const mobileInventoryLink = document.getElementById("mobileInventoryLink")
   const mobileAnalyticsLink = document.getElementById("mobileAnalyticsLink")
+  console.log(currentUser);
 
-  if (currentUser && currentUser.role === "vendor") {
+  if (currentUser && currentUser.user.role === "vendor") {
     if (inventoryLink) inventoryLink.style.display = "block"
     if (analyticsLink) analyticsLink.style.display = "block"
     if (mobileInventoryLink) mobileInventoryLink.style.display = "flex"
@@ -299,32 +294,47 @@ function updateVendorMenu() {
   }
 }
 
-function updateWalletBalance() {
-  const currentUser = JSON.parse(localStorage.getItem("currentUser"))
-  const balanceEl = document.getElementById("walletBalance")
-
-  if (!balanceEl) return
-
-  if (!currentUser) {
-    balanceEl.textContent = "$0"
+async function updateWalletBalance() {
+  console.log('fuckk')
+  const currentUser = JSON.parse(localStorage.getItem("userData"))
+  if(!currentUser){
+    window.location.href = "login.html";
     return
   }
 
-  const users = JSON.parse(localStorage.getItem("users")) || []
-  const user = users.find((u) => u.id === currentUser.id)
-  if (user) {
-    balanceEl.textContent = `$${user.walletBalance || 0}`
-  }
-}
-
-async function updateCartBadge() {
   try{
-    const response = await fetch('',
+    const response = await fetch('http://127.0.0.1:8000/wallet/getbalance/',
       {
         method: "GET",
         headers: {
           "Content-Type":"application/json",
-          "Authorization": `Bearer ${authToken.access}`,
+          "Authorization":`Bearer ${currentUser.access}`
+        }
+      });
+
+    const balance = await response.json();
+    const balanceEl = document.getElementById("walletBalance")
+    if (!balanceEl) return
+    balanceEl.textContent = `₦${balance.balance}`
+    
+  }catch(error){
+    // const newError = await error.json();
+    // console.log(newError);
+
+  }
+
+}
+
+async function updateCartBadge() {
+  const currentUser = JSON.parse(localStorage.getItem("userData"))
+
+  try{
+    const response = await fetch('http://127.0.0.1:8000/cart/cart-items/',
+      {
+        method: "GET",
+        headers: {
+          "Content-Type":"application/json",
+          "Authorization": `Bearer ${currentUser.access}`,
         }
       }
     )
@@ -335,7 +345,6 @@ async function updateCartBadge() {
   }catch(error){
     console.log(error);
   }
-
 }
 
 function updateNotifications() {

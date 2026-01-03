@@ -14,20 +14,8 @@
   --danger: #ff4d4d;
   --border: #e5e7eb;
   --white: #ffffff;
-}
-
-/* Added navbar styles for chat page */
-.navbar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--border);
-  z-index: 100;
-  padding: 12px 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --nav-height: 70px;
+  --input-space: 72px; /* space reserved at bottom for message input */
 }
 
 .navbar-content {
@@ -129,13 +117,14 @@ body {
   height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow: hidden; /* ← FIX 1 */
 }
 
 .chat-container {
   display: grid;
   grid-template-columns: 300px 1fr;
   height: calc(100vh - 70px);
-  margin-top: 70px;
+  overflow: hidden;
 }
 
 /* Sidebar */
@@ -144,11 +133,23 @@ body {
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
+  height: 100%; /* ← FIX 3 */
+  overflow: hidden; /* ← FIX 4 */
 }
 
 .sidebar-header {
   padding: 16px;
   border-bottom: 1px solid var(--border);
+  background: var(--white);
+}
+
+/* Keep sidebar header and chat header visible below the fixed navbar when scrolling */
+.sidebar-header {
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--white);
+  flex-shrink: 0; /* ← FIX 5 */
+  /* REMOVE position: sticky */
 }
 
 .sidebar-header h2 {
@@ -157,10 +158,12 @@ body {
 
 .conversations-list {
   flex: 1;
-  overflow-y: auto;
+  overflow-y: auto; /* ← Independent scroll */
+  overflow-x: hidden;
 }
 
 .conversation-item {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -199,18 +202,51 @@ body {
 }
 
 .conversation-last-message {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 12px;
   color: var(--text-secondary);
-  white-space: nowrap;
+}
+
+.conversation-last-message-text {
+  flex: 1 1 auto;
+  min-width: 0; /* allow flex child to shrink for ellipsis */
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
+
+.conversation-read-status {
+  flex: 0 0 auto;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  font-size: 12px;
+  margin-left: 6px;
+  opacity: 0.95;
+}
+
+/* Unread badge */
+.conversation-unread-badge {
+  background: var(--danger);
+  color: #fff;
+  border-radius: 999px;
+  padding: 2px 7px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-left: 8px;
+  display: inline-block;
+}
+
+
 
 /* Main Chat */
 .chat-main {
   display: flex;
   flex-direction: column;
   background: var(--white);
+  height: 100%; /* ← FIX 6 */
+  overflow: hidden; 
 }
 
 .chat-empty {
@@ -231,6 +267,7 @@ body {
   display: flex;
   flex-direction: column;
   height: 100%;
+  overflow: hidden; /* ← FIX 8 */
 }
 
 /* Chat Header */
@@ -240,12 +277,15 @@ body {
   align-items: center;
   padding: 16px;
   border-bottom: 1px solid var(--border);
+  background: var(--accent);
+  flex-shrink: 0; 
 }
 
 .chat-user-info {
   display: flex;
   align-items: center;
   gap: 12px;
+  cursor: pointer;
 }
 
 .chat-avatar {
@@ -258,12 +298,12 @@ body {
 .chat-user-name {
   font-size: 14px;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--primary);
 }
 
 .chat-user-status {
   font-size: 12px;
-  color: var(--success);
+  color: var(--white);
 }
 
 .close-btn {
@@ -278,17 +318,21 @@ body {
 /* Messages */
 .messages-list {
   flex: 1;
-  overflow-y: auto;
+  overflow-y: auto; /* ← Independent scroll */
+  overflow-x: hidden;
   padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 12px;
+  padding-bottom: 16px; /* ensure messages are not hidden behind the input */
 }
 
 .message {
   display: flex;
-  max-width: 70%;
+  flex-direction: column; /* stack bubble and time vertically */
+  max-width: 100%;
   animation: fadeIn 0.3s ease;
+  align-items: flex-start; /* default: received messages align left */
 }
 
 @keyframes fadeIn {
@@ -303,11 +347,11 @@ body {
 }
 
 .message.sent {
-  justify-content: flex-end;
+  align-items: flex-end; /* sent messages align to the right */
 }
 
 .message.received {
-  justify-content: flex-start;
+  align-items: flex-start; /* received messages align to the left */
 }
 
 .message-bubble {
@@ -315,6 +359,9 @@ body {
   border-radius: 12px;
   font-size: 14px;
   line-height: 1.4;
+  display: inline-block; /* size to content */
+  max-width: 70%; /* prevent bubble from spanning full width */
+  word-wrap: break-word;
 }
 
 .message.sent .message-bubble {
@@ -323,22 +370,25 @@ body {
 }
 
 .message.received .message-bubble {
-  background: var(--secondary);
-  color: var(--text-primary);
+  background: var(--accent);
+  color: var(--white);
 }
 
 .message-time {
   font-size: 11px;
   color: var(--text-secondary);
   margin-top: 4px;
+  margin-left: 2px;
 }
 
 /* Message Input */
 .message-input-area {
-  display: flex;
+display: flex;
   gap: 8px;
   padding: 16px;
   border-top: 1px solid var(--border);
+  background: var(--white);
+  flex-shrink: 0; /* ← FIX 10 */
 }
 
 .message-input {
@@ -356,7 +406,7 @@ body {
 }
 
 .send-btn {
-  background: var(--accent);
+  background: var(--primary);
   border: none;
   color: var(--white);
   width: 40px;
@@ -400,6 +450,14 @@ body {
     box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
   }
 
+  /* When sidebar is fixed (mobile), make its header stick to the top of the sidebar */
+  .sidebar .sidebar-header {
+    position: sticky;
+    top: 0;
+    z-index: 60; /* above the overlay (z-index:40) but below the navbar */
+    background: var(--white);
+  }
+
   .sidebar.open {
     transform: translateX(0);
   }
@@ -419,7 +477,7 @@ body {
     display: flex;
     align-items: center;
     padding: 12px;
-    background: var(--white);
+    background: var(--accent);
     border-bottom: 1px solid var(--border);
   }
 
@@ -428,7 +486,7 @@ body {
     align-items: center;
     gap: 8px;
     padding: 8px 12px;
-    background: var(--white);
+    background: var(--accent);
     border-bottom: 1px solid var(--border);
     justify-content: space-between;
     flex-wrap: nowrap;
@@ -494,6 +552,13 @@ body {
 
   .message {
     max-width: 85%;
+  }
+
+  /* On small screens the input should span the viewport width */
+  .message-input-area {
+    left: 0;
+    right: 0;
+    width: 100%;
   }
 
   /* Overlay when sidebar is open */

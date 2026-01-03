@@ -24,9 +24,9 @@ body {
 
 /* Main Content */
 .main-content {
-  margin-top: 70px;
+  /* margin-top: 70px; */
   padding: 40px 20px;
-  max-width: 1200px;
+  min-width: 1400px;
   margin-left: auto;
   margin-right: auto;
 }
@@ -67,21 +67,57 @@ body {
 }
 
 .btn-primary.fab {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
+  width: 143px;
+  height: 48px;
+  border-radius: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 0;
-  font-size: 24px;
+  font-size: 16px;
 }
-
 /* Products Grid */
 .products-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 20px;
+}
+
+/* Tabs (styled like leaderboard) */
+.tabs-bar,
+.tab-navigation {
+  display: flex;
+  gap: 12px;
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+}
+
+.tab-btn {
+  padding: 12px 20px;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  border-bottom: 2px solid transparent;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.tab-btn:hover {
+  color: var(--primary);
+}
+
+.tab-btn.active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+}
+
+.contents-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 18px;
 }
 
 .product-card {
@@ -316,6 +352,57 @@ body {
   display: none;
 }
 
+/* Image preview thumbnails */
+.image-preview-container {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+.image-preview-thumb {
+  width: 80px;
+  height: 80px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+}
+.image-preview-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.image-preview-thumb {
+  position: relative;
+}
+.image-preview-remove {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  cursor: pointer;
+}
+.image-preview-remove:hover {
+  background: rgba(0,0,0,0.8);
+}
+.image-preview-caption {
+  font-size: 11px;
+  color: var(--text-secondary);
+  text-align: center;
+  margin-top: 6px;
+}
+
 /* Added video upload section with accent color styling */
 .video-upload {
   position: relative;
@@ -347,6 +434,36 @@ body {
   flex-direction: column;
   gap: 10px;
   margin-top: 24px;
+}
+
+/* Preview area for a selected content video */
+.video-preview-container {
+  margin-top: 12px;
+}
+.content-video-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+  border: 1px solid var(--border);
+  padding: 12px;
+  border-radius: 8px;
+  background: #fff;
+}
+.preview-video-player {
+  width: 100%;
+  max-height: 320px;
+  background: #000;
+  border-radius: 6px;
+}
+.video-info {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* Utility class to hide elements explicitly */
+.hidden {
+  display: none !important;
 }
 
 .form-actions button {

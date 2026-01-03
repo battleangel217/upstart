@@ -11,7 +11,7 @@
     <!-- Removed duplicate navbar - using shared-nav.js instead -->
     
     <!-- Main Content -->
-    <main class="main-content">
+    <main class="main-content container">
         <!-- Category Filter -->
         <section class="category-filter">
             <div class="filter-container">
@@ -57,13 +57,13 @@
                 </div>
 
                 <!-- Product Info -->
-                <div class="product-info">
+                <div class="product-info" id="productInfo">
                     <h1 id="productName"></h1>
                     
-                    <div class="product-price">
+<div class="product-price">
                         <span class="price" id="productPrice"></span>
                     </div>
-
+                    
                     <div class="product-rating">
                         <span class="stars" id="productRating">★★★★★</span>
                         <span class="review-count" id="reviewCount">(0 reviews)</span>
@@ -92,10 +92,10 @@
                     </div>
 
                     <div class="product-details-grid">
-                        <div class="detail-item">
+                        <!-- <div class="detail-item">
                             <span class="detail-label">Color:</span>
                             <span class="detail-value" id="productColor"></span>
-                        </div>
+                        </div> -->
                         <div class="detail-item">
                             <span class="detail-label">Location:</span>
                             <span class="detail-value" id="productLocation"></span>
@@ -118,7 +118,7 @@
                     <div class="vendor-section">
                         <h3>Seller Information</h3>
                         <div class="vendor-card">
-                            <div class="vendor-profile">
+                            <div class="vendor-Btn">
                                 <img id="vendorImage" src="/placeholder.svg?height=80&width=80" alt="Vendor" class="vendor-avatar">
                                 <div class="vendor-info">
                                     <h4 id="vendorName"></h4>
@@ -203,7 +203,7 @@
 
     <!-- Load shared navigation first, then page-specific scripts -->
     <script src="shared-nav.js"></script>
-    <script src="data-initializer.js"></script>
+    <!-- <script src="data-initializer.js"></script> -->
     <script src="index.js"></script>
 </body>
 </html>

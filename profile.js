@@ -1,30 +1,23 @@
 let isEditing = false
 
-function loadUserProfile() {
-  const currentUser = JSON.parse(localStorage.getItem("currentUser"))
+async function loadUserProfile() {
+  const currentUser = JSON.parse(localStorage.getItem("userData"))
   if (!currentUser) {
     window.location.href = "login.html"
     return
   }
 
-  const users = JSON.parse(localStorage.getItem("users")) || []
-  const user = users.find((u) => u.id === currentUser.id)
-
-  if (!user) return
+  const user = currentUser.user
+  console.log(user)
 
   // Load profile data
   document.getElementById("profileName").textContent = user.username
   document.getElementById("username").value = user.username
   document.getElementById("email").value = user.email
   document.getElementById("phone").value = user.phone
-  document.getElementById("university").value = user.university
-  document.getElementById("department").value = user.department
-  document.getElementById("profileRole").textContent = user.role === "vendor" ? "Vendor" : "Customer"
-
-  // Load profile picture if exists
-  if (user.profilePicture) {
-    document.getElementById("profileImg").src = user.profilePicture
-  }
+  document.getElementById("profileRole").textContent = user.role
+  document.getElementById("profileImg").src = user.profile_url
+  document.getElementById("bio").value = user.bio
 
   // Load vendor stats if vendor
   if (user.role === "vendor") {
@@ -42,17 +35,54 @@ function loadUserProfile() {
     const avgRating = reviews.reduce((a, b) => a + b, 0) / reviews.length
     document.getElementById("overallRating").textContent = avgRating.toFixed(1)
     document.getElementById("ratingStars").textContent =
-      "★".repeat(Math.round(avgRating)) + "☆".repeat(5 - Math.round(avgRating))
+      "★".repeat(Math.round(avgRating)) + "☆".repeat(5 - Math.round(user.rating))
     document.getElementById("reviewCountText").textContent =
       `${reviews.length} review${reviews.length !== 1 ? "s" : ""}`
   }
+
+  const select = document.getElementById('university');
+  const bio = document.getElementById("bio");
+  try{
+    const response = await fetch('http://universities.hipolabs.com/search?country=Nigeria',
+    {
+      method: 'GET',
+      headers: {"Content-Type":"application/json"}
+    }
+    );
+
+    if(!response.ok){
+      alert("Can't connect to server");
+    }
+
+    const res = await response.json();
+
+    res.forEach((item) => {
+      const option = document.createElement('option');
+      option.value = item.name;
+      option.textContent = item.name;
+      select.appendChild(option);
+
+    })
+
+    
+
+
+  }catch(error){
+     select.innerHTML = '<option value="" disabled>Error loading universities</option>';
+  }
+  select.disabled = true;
+  bio.disabled = true;
+  document.getElementById("university").value = user.institute
 }
 
 // Edit profile
 document.getElementById("editBtn").addEventListener("click", () => {
   isEditing = true
   document.querySelectorAll(".form-input").forEach((input) => {
-    if (input.id !== "username") input.removeAttribute("readonly")
+    if (input.id !== "username" && input.id !== "email" && input.id !== "phone") {
+      input.removeAttribute("readonly")
+      input.removeAttribute("disabled")
+    }
   })
   document.getElementById("editBtn").style.display = "none"
   document.getElementById("saveBtn").style.display = "block"
@@ -60,34 +90,61 @@ document.getElementById("editBtn").addEventListener("click", () => {
 })
 
 // Save changes
-document.getElementById("saveBtn").addEventListener("click", () => {
-  const currentUser = JSON.parse(localStorage.getItem("currentUser"))
-  const users = JSON.parse(localStorage.getItem("users")) || []
-  const userIndex = users.findIndex((u) => u.id === currentUser.id)
-
-  if (userIndex !== -1) {
-    users[userIndex].email = document.getElementById("email").value
-    users[userIndex].phone = document.getElementById("phone").value
-    users[userIndex].university = document.getElementById("university").value
-    users[userIndex].department = document.getElementById("department").value
-
-    localStorage.setItem("users", JSON.stringify(users))
-    localStorage.setItem("currentUser", JSON.stringify(users[userIndex]))
-
-    isEditing = false
-    document.querySelectorAll(".form-input").forEach((input) => input.setAttribute("readonly", ""))
-    document.getElementById("editBtn").style.display = "block"
-    document.getElementById("saveBtn").style.display = "none"
-    document.getElementById("cancelBtn").style.display = "none"
-
-    alert("Profile updated successfully!")
+document.getElementById("saveBtn").addEventListener("click", async () => {
+  const currentUser = JSON.parse(localStorage.getItem("userData"))
+  if (!currentUser) {
+    window.location.href = "login.html"
+    return
   }
+
+  const bio = document.getElementById("bio").value;
+  const institute = document.getElementById("university").value;
+  console.log(JSON.stringify({bio, institute}))
+  try{
+    const response = await fetch('http://127.0.0.1:8000/auth/users/me/', 
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type":"application/json",
+          "Authorization":`Bearer ${currentUser.access}`
+        },
+        body: JSON.stringify({bio, institute})
+      })
+
+    if (response.ok){
+      const data = await response.json()
+      alert("Profile updated successfully!")
+      currentUser.user.bio = data.bio
+      currentUser.user.institute = data.institute
+
+      localStorage.setItem("userData", JSON.stringify(currentUser));
+
+      isEditing = false
+      document.querySelectorAll(".form-input").forEach((input) => {
+        input.setAttribute("readonly", "")
+        input.setAttribute("disabled", "")
+      })
+      document.getElementById("editBtn").style.display = "block"
+      document.getElementById("saveBtn").style.display = "none"
+      document.getElementById("cancelBtn").style.display = "none"
+      loadUserProfile()
+    }
+
+
+  }catch(error){
+
+  }
+
+
 })
 
 // Cancel edit
 document.getElementById("cancelBtn").addEventListener("click", () => {
   isEditing = false
-  document.querySelectorAll(".form-input").forEach((input) => input.setAttribute("readonly", ""))
+  document.querySelectorAll(".form-input").forEach((input) => {
+    input.setAttribute("readonly", "")
+    input.setAttribute("disabled", "")
+  })
   document.getElementById("editBtn").style.display = "block"
   document.getElementById("saveBtn").style.display = "none"
   document.getElementById("cancelBtn").style.display = "none"
@@ -99,32 +156,60 @@ document.getElementById("changePhotoBtn").addEventListener("click", () => {
   document.getElementById("photoInput").click()
 })
 
-document.getElementById("photoInput").addEventListener("change", (e) => {
-  const file = e.target.files[0]
-  if (file) {
-    const reader = new FileReader()
-    reader.onload = (event) => {
-      const dataUrl = event.target.result
-      document.getElementById("profileImg").src = dataUrl
+document.getElementById("photoInput").addEventListener("change", async (e) => {
+  const currentUser = JSON.parse(localStorage.getItem("userData"))
+  if (!currentUser) {
+    window.location.href = "login.html"
+    return
+  }
 
-      // Save to localStorage
-      const currentUser = JSON.parse(localStorage.getItem("currentUser"))
-      const users = JSON.parse(localStorage.getItem("users")) || []
-      const userIndex = users.findIndex((u) => u.id === currentUser.id)
-      if (userIndex !== -1) {
-        users[userIndex].profilePicture = dataUrl
-        localStorage.setItem("users", JSON.stringify(users))
-      }
+  const file = e.target.files[0]
+  
+  const formData = new FormData();
+  formData.append('profile_picture', file);
+
+  try{
+    const response = await fetch('http://127.0.0.1:8000/auth/users/me/', 
+      {
+        method: "PATCH",
+        headers: {
+          "Authorization":`Bearer ${currentUser.access}`
+        },
+        body: formData
+      })
+
+    if (response.ok){
+      const data = await response.json()
+      alert("Profile picture updated successfully!")
+
+      document.getElementById("profileImg").src = data.profile_url
+
+      currentUser.user.profile_url = data.profile_url
+      localStorage.setItem("userData", JSON.stringify(currentUser))
     }
-    reader.readAsDataURL(file)
+
+
+  }catch(error){
+
   }
 })
 
-// Logout
-document.getElementById("logoutBtn").addEventListener("click", () => {
-  localStorage.setItem("currentUser", JSON.stringify(null))
-  window.location.href = "login.html"
-})
+// // Logout
+// document.getElementById("logoutBtn").addEventListener("click", () => {
+//   localStorage.setItem("currentUser", JSON.stringify(null))
+//   window.location.href = "login.html"
+// })
 
 // Initialize
-document.addEventListener("DOMContentLoaded", loadUserProfile)
+document.addEventListener("DOMContentLoaded", async () => {
+  const currentUser = JSON.parse(localStorage.getItem("userData"))
+  if (!currentUser) {
+    window.location.href = "login.html"
+    return
+  }
+  
+  const profileNav = document.getElementById('viewProfile')
+  if (profileNav) profileNav.style.display = "none"
+
+  loadUserProfile()
+})

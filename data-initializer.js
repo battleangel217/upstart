@@ -276,6 +276,7 @@ function initializeDummyData() {
       {
         id: 101,
         name: "TechSmart",
+        bio: "Student-run tech reseller specializing in refurbished laptops and accessories. Fast replies and warranty on used items.",
         email: "tech@upstart.com",
         phone: "5551234567",
         university: "State University",
@@ -291,6 +292,7 @@ function initializeDummyData() {
       {
         id: 102,
         name: "Book Exchange",
+        bio: "Affordable textbooks and study materials. We carefully inspect items and offer bundle discounts.",
         email: "books@upstart.com",
         phone: "5552345678",
         university: "State University",
@@ -306,6 +308,7 @@ function initializeDummyData() {
       {
         id: 103,
         name: "Fashion Hub",
+        bio: "Trendy clothing and accessories for students. Gently used items in great condition.",
         email: "fashion@upstart.com",
         phone: "5553456789",
         university: "Tech College",
@@ -321,6 +324,7 @@ function initializeDummyData() {
       {
         id: 104,
         name: "Wellness Store",
+        bio: "Health and fitness gear curated for campus life — mats, bottles, and wellness kits.",
         email: "wellness@upstart.com",
         phone: "5554567890",
         university: "Health University",
@@ -336,6 +340,7 @@ function initializeDummyData() {
       {
         id: 105,
         name: "Audio Pro",
+        bio: "High-quality audio gear from headphones to speakers. Tech-savvy sellers who can demo products.",
         email: "audio@upstart.com",
         phone: "5555678901",
         university: "Tech Institute",
@@ -351,6 +356,7 @@ function initializeDummyData() {
       {
         id: 106,
         name: "Study Gear",
+        bio: "Everyday study essentials and dorm supplies. Fast pickup and clear item descriptions.",
         email: "gear@upstart.com",
         phone: "5556789012",
         university: "State University",
@@ -366,6 +372,7 @@ function initializeDummyData() {
       {
         id: 107,
         name: "Sport Central",
+        bio: "Sports equipment and apparel. Great selection for athletes and casual exercisers.",
         email: "sports@upstart.com",
         phone: "5557890123",
         university: "Athletic College",
@@ -381,6 +388,7 @@ function initializeDummyData() {
       {
         id: 108,
         name: "Setup Solutions",
+        bio: "IT helpers and setup specialists. We help configure devices and bundle essential accessories.",
         email: "setup@upstart.com",
         phone: "5558901234",
         university: "Tech Institute",

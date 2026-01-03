@@ -11,8 +11,7 @@ const SHARED_UTILS = {
         <div class="navbar-content">
           <div class="navbar-left">
             <a href="index.html" class="logo" title="Back to home">
-              <span class="logo-icon">↑</span>
-              <span class="logo-text">Upstart</span>
+              <img src="https://icuklzexzhusblkzglnr.supabase.co/storage/v1/object/public/marketplace/logo/Upstart-removebg-preview.png" alt="Upstart" class="logo-image">
             </a>
           </div>
           ${

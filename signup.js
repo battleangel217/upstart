@@ -279,7 +279,7 @@ document.getElementById("signupForm").addEventListener("submit", async (e) => {
     username,
     phone,
     email,
-    "institution": university,
+    "institute": university,
     role,
     password
   }
