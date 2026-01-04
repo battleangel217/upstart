@@ -19,26 +19,6 @@ async function loadUserProfile() {
   document.getElementById("profileImg").src = user.profile_url
   document.getElementById("bio").value = user.bio
 
-  // Load vendor stats if vendor
-  if (user.role === "vendor") {
-    document.getElementById("vendorSection").style.display = "block"
-    const products = JSON.parse(localStorage.getItem("products")) || []
-    const vendorProducts = products.filter((p) => p.vendorId === user.id)
-    document.getElementById("productsListed").textContent = vendorProducts.length
-    document.getElementById("totalSales").textContent = user.totalSales || 0
-    document.getElementById("avgRating").textContent = (user.averageRating || 0).toFixed(1)
-  }
-
-  // Load rating
-  const reviews = user.ratings || []
-  if (reviews.length > 0) {
-    const avgRating = reviews.reduce((a, b) => a + b, 0) / reviews.length
-    document.getElementById("overallRating").textContent = avgRating.toFixed(1)
-    document.getElementById("ratingStars").textContent =
-      "★".repeat(Math.round(avgRating)) + "☆".repeat(5 - Math.round(user.rating))
-    document.getElementById("reviewCountText").textContent =
-      `${reviews.length} review${reviews.length !== 1 ? "s" : ""}`
-  }
 
   const select = document.getElementById('university');
   const bio = document.getElementById("bio");

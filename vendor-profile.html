@@ -54,21 +54,29 @@
                 </div>
             </div>
 
-            <!-- Added videos section for vendor content -->
-            <div class="videos-section" id="videosSection" style="display: none;">
-                <h2>Product Videos & Content</h2>
-                <div class="videos-grid" id="videosGrid">
-                    <!-- Videos will be inserted here -->
-                </div>
+            <!-- Tabs for Products and Content -->
+            <div class="tabs-bar">
+                <button class="tab-btn active" id="tabProducts">Products</button>
+                <button class="tab-btn" id="tabContent">Content</button>
             </div>
 
-            <!-- Products Section -->
-            <div class="products-section">
-                <h2>Products</h2>
+            <!-- Products Section (default visible) -->
+            <section id="productsSection">
                 <div class="products-grid" id="productsGrid">
                     <!-- Products will be inserted here -->
                 </div>
-            </div>
+            </section>
+
+            <!-- Content Section (hidden by default) -->
+            <section id="contentSection" class="hidden">
+                <div class="contents-grid" id="contentsGrid">
+                    <!-- Content items (videos/posts) will be inserted here -->
+                    <div class="empty-inventory" style="grid-column: 1/-1;">
+                        <div class="empty-icon">🎬</div>
+                        <p class="empty-text">No content available from this vendor.</p>
+                    </div>
+                </div>
+            </section>
         </div>
     </main>
 

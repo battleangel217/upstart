@@ -449,7 +449,7 @@ display: flex;
 }
 
 /* Tablet and Mobile Styles */
-@media (max-width: 768px) {
+@media (max-width: 800px) {
   body {
     margin-top: var(--nav-height);
   }

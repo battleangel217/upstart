@@ -415,7 +415,7 @@ body {
   grid-template-columns: none;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 800px) {
   .main-content {
     min-width: 100%;
     max-width: 100%;

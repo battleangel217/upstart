@@ -137,6 +137,56 @@ function loadVendorVideos() {
   })
 }
 
+// Load vendor's content (videos posted by the vendor)
+async function loadVendorContent() {
+  const currentUser = JSON.parse(localStorage.getItem("userData"))
+  const grid = document.getElementById('contentsGrid')
+  if (!grid) return
+
+  // Show a loading placeholder
+  grid.innerHTML = `<div class="empty-inventory" style="grid-column: 1/-1;"><p class="empty-text">Loading content...</p></div>`
+
+  if (!currentUser || !currentUser.access) {
+    window.location.href = 'login.html'
+    return
+  }
+
+  try {
+    // Fetch content posted by this specific vendor
+    const res = await fetch(`http://127.0.0.1:8000/customers/vendor-contents/${vendorId}`, {
+      method: 'GET',
+      headers: { 'Authorization': `Bearer ${currentUser.access}` }
+    })
+    if (!res.ok) throw new Error('Failed to fetch')
+    const items = await res.json()
+    if (!Array.isArray(items) || items.length === 0) {
+      grid.innerHTML = `<div class="empty-inventory" style="grid-column: 1/-1;"><div class="empty-icon">🎬</div><p class="empty-text">No content available from this vendor.</p></div>`
+      return
+    }
+    // expose items to the global scope so we can safely reference them from inline
+    // onclick handlers without embedding the entire array into the HTML string,
+    // which previously caused a "missing ] after element list" SyntaxError.
+    window._vendorContentItems = items
+
+    grid.innerHTML = items.map((it, index) => {
+      return `
+        <div class="product-card">
+          <div class="video-container" onclick="initVideoViewer(window._vendorContentItems, ${index})">
+            <video src="${it.video || '#'}" class="video-player-preview"></video>
+          </div>
+          <div class="product-card-body">
+            <div class="product-card-name">${it.caption || 'Untitled'}</div>
+          </div>
+        </div>
+      `
+    }).join('')
+
+  } catch (err) {
+    console.error('Error loading vendor content', err)
+    grid.innerHTML = `<div class="empty-inventory" style="grid-column: 1/-1;"><p class="empty-text">Failed to load content.</p></div>`
+  }
+}
+
 async function openProductModal(productId) {
   const currentUser = JSON.parse(localStorage.getItem('userData'))
   const headers = {
@@ -222,4 +272,29 @@ document.addEventListener("DOMContentLoaded", () => {
       window.location.href = "chat.html"
     }
   })
+
+  // Tab switching logic for Products/Content
+  const tabProductsBtn = document.getElementById('tabProducts')
+  const tabContentBtn = document.getElementById('tabContent')
+  const productsSection = document.getElementById('productsSection')
+  const contentSection = document.getElementById('contentSection')
+
+  function activateTab(tabName) {
+    if (tabName === 'products') {
+      tabProductsBtn?.classList.add('active')
+      tabContentBtn?.classList.remove('active')
+      productsSection?.classList.remove('hidden')
+      contentSection?.classList.add('hidden')
+      loadVendorProducts(vendorId)
+    } else if (tabName === 'content') {
+      tabProductsBtn?.classList.remove('active')
+      tabContentBtn?.classList.add('active')
+      productsSection?.classList.add('hidden')
+      contentSection?.classList.remove('hidden')
+      loadVendorContent()
+    }
+  }
+
+  if (tabProductsBtn) tabProductsBtn.addEventListener('click', () => activateTab('products'))
+  if (tabContentBtn) tabContentBtn.addEventListener('click', () => activateTab('content'))
 })

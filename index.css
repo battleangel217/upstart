@@ -1396,7 +1396,7 @@ body {
 }
 
 /* Responsive */
-@media (max-width: 768px) {
+@media (max-width: 800px) {
   .navbar {
     padding: 10px 15px;
   }

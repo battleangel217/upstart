@@ -338,6 +338,84 @@ body {
   color: var(--accent);
 }
 
+/* Tabs (styled like inventory) */
+.tabs-bar {
+  display: flex;
+  gap: 12px;
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  margin-bottom: 24px;
+}
+
+.tab-btn {
+  padding: 12px 20px;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  border-bottom: 2px solid transparent;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.tab-btn:hover {
+  color: var(--primary);
+}
+
+.tab-btn.active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+}
+
+/* Content grid for videos - same as inventory */
+.contents-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 18px;
+}
+
+/* Ensure inline content video previews match the product image size */
+.video-container {
+  width: 100%;
+  height: 180px; /* same height as .product-image */
+  overflow: hidden;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.video-container video.video-player-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* crop to match image styling */
+  display: block;
+}
+
+/* Hidden sections */
+.hidden {
+  display: none !important;
+}
+
+.empty-inventory {
+  text-align: center;
+  padding: 60px 20px;
+  background: var(--white);
+  border-radius: 12px;
+}
+
+.empty-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+
+.empty-text {
+  color: var(--text-secondary);
+  font-size: 16px;
+}
+
 /* Modal */
 .modal-overlay {
   display: none;
@@ -518,7 +596,7 @@ body {
   box-shadow: 0 8px 16px rgba(255, 184, 0, 0.3);
 }
 
-@media (max-width: 768px) {
+@media (max-width: 800px) {
   .main-content {
     min-width: 100%;
     max-width: 100%;
@@ -561,6 +639,11 @@ body {
   .products-grid {
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
     gap: 14px;
+  }
+
+  .contents-grid {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px;
   }
 
   .product-details-container {
@@ -641,6 +724,11 @@ body {
   .products-grid {
     grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
     gap: 12px;
+  }
+
+  .contents-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 10px;
   }
 
   .product-card-body {

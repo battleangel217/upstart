@@ -182,7 +182,7 @@ select:focus {
   color: var(--accent);
 }
 
-@media (max-width: 768px) {
+@media (max-width: 800px) {
   .login-container {
     padding: 20px 15px;
   }

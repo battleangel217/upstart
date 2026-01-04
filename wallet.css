@@ -333,7 +333,7 @@ body {
   margin-top: 10px;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 800px) {
   /* Ensure main content can shrink on tablets/phones and avoid horizontal overflow */
   .main-content {
     padding: 20px 10px;
