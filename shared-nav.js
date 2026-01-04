@@ -297,10 +297,7 @@ function updateVendorMenu() {
 async function updateWalletBalance() {
   console.log('fuckk')
   const currentUser = JSON.parse(localStorage.getItem("userData"))
-  if(!currentUser){
-    window.location.href = "login.html";
-    return
-  }
+  if(!currentUser) return
 
   try{
     const response = await fetch('http://127.0.0.1:8000/wallet/getbalance/',
