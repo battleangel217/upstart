@@ -336,7 +336,7 @@ document.getElementById("checkoutAllBtn").addEventListener("click", () => {
 })
 
 document.addEventListener("DOMContentLoaded", () => {
-  const currentUser = JSON.parse(localStorage.getItem("currentUser"))
+  const currentUser = JSON.parse(localStorage.getItem("userData"))
   if (!currentUser) {
     window.location.href = "login.html"
   }
