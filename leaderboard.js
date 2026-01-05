@@ -1,6 +1,6 @@
 async function loadLeaderboard() {
   try{
-    const response = await fetch('http://127.0.0.1:8000/customers/top-vendors/',
+    const response = await fetch('https://upstartpy.onrender.com/customers/top-vendors/',
       {
         method: "GET",
         headers: {"Content-Type":"application/json"}
@@ -16,7 +16,7 @@ async function loadLeaderboard() {
   }
 
   try{
-    const response = await fetch('http://127.0.0.1:8000/customers/top-customers/',
+    const response = await fetch('https://upstartpy.onrender.com/customers/top-customers/',
       {
         method: "GET",
         headers: {"Content-Type":"application/json"}
@@ -31,7 +31,7 @@ async function loadLeaderboard() {
   }
 
   try{
-    const response = await fetch('http://127.0.0.1:8000/analytics/top-products/',
+    const response = await fetch('https://upstartpy.onrender.com/analytics/top-products/',
       {
         method: "GET",
         headers: {
@@ -173,7 +173,7 @@ async function addLeaderboardProductToCart(productId) {
   }
 
   try{
-    const response = await fetch(`http://127.0.0.1:8000/cart/cart-items/${productId}`,
+    const response = await fetch(`https://upstartpy.onrender.com/cart/cart-items/${productId}`,
       {
         method: "POST",
         headers: {

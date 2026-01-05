@@ -118,8 +118,8 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
   const loginInfo = {email, password};
 
   try {
-    const response = await fetch('http://127.0.0.1:8000/auth/jwt/create/', {
-      method: "POST",
+    const response = await fetch('https://upstartpy.onrender.com/auth/jwt/create/', {
+      method: 'POST',
       headers: {"Content-Type":"application/json"},
       body: JSON.stringify(loginInfo)
     });
@@ -149,11 +149,8 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
     // document.getElementById("loginSuccess").textContent = "Login successful! Redirecting...";
     // document.getElementById("loginSuccess").classList.add("show");
 
-    // Redirect after 1 second
-    setTimeout(() => {
-      window.location.href = "index.html";
-    }, 30000);
 
+    window.location.href = "index.html";
     return;
   } catch (err) {
     // Hide loading modal on error

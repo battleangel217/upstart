@@ -23,7 +23,7 @@ async function loadInventory() {
   if (!currentUser) return
 
   try{
-    const response = await fetch('http://127.0.0.1:8000/products/my_products/',
+    const response = await fetch('https://upstartpy.onrender.com/products/my_products/',
       {
         method: "GET",
         headers: {
@@ -319,7 +319,7 @@ document.getElementById("addProductForm").addEventListener("submit", async (e) =
 
   // Try to POST to backend; if network fails, fall back to localStorage
   try {
-    const response = await fetch('http://127.0.0.1:8000/products/create', {
+    const response = await fetch('https://upstartpy.onrender.com/products/create', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${currentUser.access}`,
@@ -348,7 +348,7 @@ document.getElementById("addProductForm").addEventListener("submit", async (e) =
 // Edit Product Modal
 async function openEditModal(productId) {
   currentEditProductId = productId
-  const response = await fetch(`http://127.0.0.1:8000/products/${productId}`,
+  const response = await fetch(`https://upstartpy.onrender.com/products/${productId}`,
     {
       method: "GET",
       headers: { "Content-Type": "application/json" }
@@ -408,7 +408,7 @@ document.getElementById("editProductForm").addEventListener("submit", async (e) 
   
 
   try{
-    const response = await fetch(`http://127.0.0.1:8000/products/${currentEditProductId}`,
+    const response = await fetch(`https://upstartpy.onrender.com/products/${currentEditProductId}`,
       {
         method: "PUT",
         headers: {
@@ -440,7 +440,7 @@ async function deleteProduct(productId) {
   }
   if (confirm("Are you sure you want to delete this product?")) {
     try{
-      const response = await fetch(`http://127.0.0.1:8000/products/${productId}`,
+      const response = await fetch(`https://upstartpy.onrender.com/products/${productId}`,
         {
           method: "DELETE",
           headers: {"Authorization":`Bearer ${currentUser.access}`}
@@ -564,7 +564,7 @@ async function loadContent() {
   }
 
     try {
-    const res = await fetch('http://127.0.0.1:8000/customers/mycontents/', {
+    const res = await fetch('https://upstartpy.onrender.com/customers/mycontents/', {
       method: 'GET',
       headers: { 'Authorization': `Bearer ${currentUser.access}` }
     })
@@ -728,7 +728,7 @@ if (uploadModalForm) {
     }
     
     try {
-      const response = await fetch('http://127.0.0.1:8000/customers/content/upload/', {
+      const response = await fetch('https://upstartpy.onrender.com/customers/content/upload/', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${currentUser.access}`

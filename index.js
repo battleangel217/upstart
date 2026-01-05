@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   console.log(headers)
 
   try{
-    const response = await fetch('http://127.0.0.1:8000/products/',{
+    const response = await fetch('https://upstartpy.onrender.com/products/',{
       method: "GET",
       headers: headers
     });
@@ -87,7 +87,7 @@ async function openProductModal(productId) {
   if (currentUser) {
     headers["Authorization"] = `Bearer ${currentUser.access}`;
   }
-  const response = await fetch(`http://127.0.0.1:8000/products/${productId}`,
+  const response = await fetch(`https://upstartpy.onrender.com/products/${productId}`,
     {
       method: "GET",
       headers
@@ -192,7 +192,7 @@ async function openProductModal(productId) {
         window.location.href='login.html';
       }
       try{
-        const response = await fetch(`http://127.0.0.1:8000/chat/create/${product.vendor_id}`,{
+        const response = await fetch(`https://upstartpy.onrender.com/chat/create/${product.vendor_id}`,{
           method: 'POST',
           headers: {
             "Authorization":`Bearer ${currentUser.access}`,
@@ -362,7 +362,7 @@ async function addToCartFromModal(productId) {
   }
 
   try{
-    const response = await fetch(`http://127.0.0.1:8000/cart/cart-items/${productId}`,
+    const response = await fetch(`https://upstartpy.onrender.com/cart/cart-items/${productId}`,
       {
         method: "POST",
         headers: {

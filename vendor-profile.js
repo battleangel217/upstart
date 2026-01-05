@@ -4,7 +4,7 @@ const vendorId = Number.parseInt(params.get("vendorId"))
 async function loadVendorProfile() {
   const currentUser = JSON.parse(localStorage.getItem('userData'))
   try{
-    const response = await fetch(`http://127.0.0.1:8000/auth/user/${vendorId}`,{
+    const response = await fetch(`https://upstartpy.onrender.com/auth/user/${vendorId}`,{
       method: "GET",
       headers: {
         "Content-Type":"application/json",
@@ -45,7 +45,7 @@ async function loadVendorProfile() {
 async function loadVendorProducts(vendorId) {
   const currentUser = JSON.parse(localStorage.getItem('userData'))
   try{
-    const response = await fetch(`http://127.0.0.1:8000/products/vendor-products/${vendorId}`, {
+    const response = await fetch(`https://upstartpy.onrender.com/products/vendor-products/${vendorId}`, {
       method: "GET",
       headers: {
         "Content-Type":"application/json",
@@ -153,7 +153,7 @@ async function loadVendorContent() {
 
   try {
     // Fetch content posted by this specific vendor
-    const res = await fetch(`http://127.0.0.1:8000/customers/vendorcontents/${vendorId}`, {
+    const res = await fetch(`https://upstartpy.onrender.com/customers/vendorcontents/${vendorId}`, {
       method: 'GET',
       headers: { 'Authorization': `Bearer ${currentUser.access}` }
     })
@@ -196,7 +196,7 @@ async function openProductModal(productId) {
   if (currentUser) {
     headers["Authorization"] = `Bearer ${currentUser.access}`;
   }
-  const response = await fetch(`http://127.0.0.1:8000/products/${productId}`,
+  const response = await fetch(`https://upstartpy.onrender.com/products/${productId}`,
     {
       method: "GET",
       headers
@@ -222,7 +222,7 @@ async function openProductModal(productId) {
     }
 
     try{
-      const response = await fetch(`http://127.0.0.1:8000/cart/cart-items/${productId}`,
+      const response = await fetch(`https://upstartpy.onrender.com/cart/cart-items/${productId}`,
         {
           method: "POST",
           headers: {

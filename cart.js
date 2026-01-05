@@ -1,7 +1,7 @@
 async function renderCartItems() {
   const userData = JSON.parse(localStorage.getItem('userData'));
   try{
-    const response = await fetch('http://127.0.0.1:8000/cart/cart-items/',
+    const response = await fetch('https://upstartpy.onrender.com/cart/cart-items/',
       {
         method: "GET",
         headers: {
@@ -106,7 +106,7 @@ function updateQuantity(productId, change) {
 async function updateCartSummary() {
   const userData = JSON.parse(localStorage.getItem('userData'));
   try{
-    const response = await fetch('http://127.0.0.1:8000/cart/cart-items/',
+    const response = await fetch('https://upstartpy.onrender.com/cart/cart-items/',
       {
         method: "GET",
         headers: {
@@ -149,7 +149,7 @@ function getVendor(vendorId) {
 }
 
 async function openProductModal(productId) {
-    const response = await fetch(`http://127.0.0.1:8000/products/${productId}`,
+    const response = await fetch(`https://upstartpy.onrender.com/products/${productId}`,
       {
         method: "GET",
         headers: { "Content-Type": "application/json" }

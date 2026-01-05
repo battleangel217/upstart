@@ -17,7 +17,7 @@ async function loadWalletData() {
     return
   }
 
-  const response = await fetch('http://127.0.0.1:8000/wallet/getbalance/',
+  const response = await fetch('https://upstartpy.onrender.com/wallet/getbalance/',
     {
       method: "GET",
       headers: {
@@ -45,7 +45,7 @@ async function verifyPayment(reference, amount) {
     showPaymentState("loading")
 
     // Verify payment with backend
-    const response = await fetch(`http://127.0.0.1:8000/wallet/verify-topup/${reference}`, {
+    const response = await fetch(`https://upstartpy.onrender.com/wallet/verify-topup/${reference}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -203,7 +203,7 @@ document.getElementById("submitAddMoney").addEventListener("click", async () => 
     showPaymentState("loading")
 
     // Step 1: Initialize payment with backend
-    const response = await fetch('http://127.0.0.1:8000/wallet/topup', {
+    const response = await fetch('https://upstartpy.onrender.com/wallet/topup', {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
