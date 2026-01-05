@@ -125,9 +125,10 @@ function passwordStrength(password) {
   if (!password) return { score, label: 'Empty' };
   if (password.length >= 8) score++;
   if (/[A-Z]/.test(password)) score++;
+  if (/[a-z]/.test(password)) score++;
   if (/[0-9]/.test(password)) score++;
   if (/[!@#\$%\^&\*\(\)_\+\-=\[\]{};':"\\|,.<>\/?`~]/.test(password)) score++;
-  const labels = ['Very weak','Weak','Fair','Good','Strong'];
+  const labels = ['Very weak','Weak','Fair','Good','Strong','Very strong'];
   return { score, label: labels[Math.min(score, labels.length-1)] };
 }
 
@@ -173,13 +174,14 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    const percent = Math.round((score / 4) * 100);
+    const percent = Math.round((score / 5) * 100);
     bar.style.width = `${percent}%`;
 
     let color = '#ef4444'; // red
-    if (score >= 4) color = '#16a34a'; // green
+    if (score >= 5) color = '#16a34a'; // green
+    else if (score === 4) color = '#10b981'; // emerald
     else if (score === 3) color = '#f59e0b'; // amber
-    else if (score === 2) color = '#f97316';
+    else if (score === 2) color = '#f97316'; // orange
 
     // set bar color and input border
     bar.style.background = color;
@@ -253,6 +255,13 @@ function validateSignup(username, phone, email, university, role, password, conf
 document.getElementById("signupForm").addEventListener("submit", async (e) => {
   e.preventDefault()
 
+  // Show loading modal and disable scrolling
+  const loadingModal = document.getElementById("loadingModal");
+  loadingModal.classList.remove("hide");
+  loadingModal.classList.add("show");
+  loadingModal.setAttribute("aria-hidden", "false");
+  document.body.classList.add("loading-active");
+
   const username = document.getElementById("username").value
   const phone = document.getElementById("phone").value
   const email = document.getElementById("email").value
@@ -268,6 +277,9 @@ document.getElementById("signupForm").addEventListener("submit", async (e) => {
   const errors = validateSignup(username, phone, email, university, role, password, confirmPassword)
 
   if (Object.keys(errors).length > 0) {
+    // Hide loading modal on validation error
+    hideLoadingModal();
+    
     Object.keys(errors).forEach((key) => {
       showToast(errors[key], "error");
     })
@@ -296,6 +308,9 @@ document.getElementById("signupForm").addEventListener("submit", async (e) => {
     )
 
     if(!response.ok){
+      // Hide loading modal on error
+      hideLoadingModal();
+      
       const error = await response.json();
       if(response.status === 400){
         if(error.email){
@@ -314,6 +329,9 @@ document.getElementById("signupForm").addEventListener("submit", async (e) => {
 
     
   }catch(error){
+    // Hide loading modal on error
+    hideLoadingModal();
+    
     console.log(error);
     return;
   }
@@ -331,5 +349,19 @@ document.getElementById("signupForm").addEventListener("submit", async (e) => {
     window.location.href = "login.html"
   }, 2000);
 })
+
+// Helper function to hide loading modal with exit animation
+function hideLoadingModal() {
+  const loadingModal = document.getElementById("loadingModal");
+  loadingModal.classList.remove("show");
+  loadingModal.classList.add("hide");
+  loadingModal.setAttribute("aria-hidden", "true");
+  
+  // Remove hide class after animation completes
+  setTimeout(() => {
+    loadingModal.classList.remove("hide");
+    document.body.classList.remove("loading-active");
+  }, 600);
+}
 
 

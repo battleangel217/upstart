@@ -89,6 +89,13 @@ function validateLogin(email, password) {
 document.getElementById("loginForm").addEventListener("submit", async (e) => {
   e.preventDefault()
 
+  // Show loading modal and disable scrolling
+  const loadingModal = document.getElementById("loadingModal");
+  loadingModal.classList.remove("hide");
+  loadingModal.classList.add("show");
+  loadingModal.setAttribute("aria-hidden", "false");
+  document.body.classList.add("loading-active");
+
   const email = document.getElementById("loginEmail").value
   const password = document.getElementById("loginPassword").value
 
@@ -100,6 +107,9 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
   const errors = validateLogin(email, password);
 
   if (Object.keys(errors).length > 0) {
+    // Hide loading modal on validation error
+    hideLoadingModal();
+    
     Object.keys(errors).forEach((k) => showToast(errors[k], "error"));
     return;
   }
@@ -115,6 +125,9 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
     });
 
     if (!response.ok) {
+      // Hide loading modal on error
+      hideLoadingModal();
+      
       if (response.status === 401) {
         // invalid credentials
         showToast("Invalid credentials", "error");
@@ -123,6 +136,7 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
       }
       return;
     }
+
 
     const data = await response.json();
     // optional: store token / user info here if you want
@@ -138,10 +152,13 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
     // Redirect after 1 second
     setTimeout(() => {
       window.location.href = "index.html";
-    }, 3000);
+    }, 30000);
 
     return;
   } catch (err) {
+    // Hide loading modal on error
+    hideLoadingModal();
+    
     console.error(err);
     showToast("Network error — please try again", "error");
     return;
@@ -172,4 +189,18 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
   // delete loggedInUser.password
   // localStorage.setItem("currentUser", JSON.stringify(loggedInUser))
 })
+
+// Helper function to hide loading modal with exit animation
+function hideLoadingModal() {
+  const loadingModal = document.getElementById("loadingModal");
+  loadingModal.classList.remove("show");
+  loadingModal.classList.add("hide");
+  loadingModal.setAttribute("aria-hidden", "true");
+  
+  // Remove hide class after animation completes
+  setTimeout(() => {
+    loadingModal.classList.remove("hide");
+    document.body.classList.remove("loading-active");
+  }, 600);
+}
 
