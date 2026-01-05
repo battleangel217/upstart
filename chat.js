@@ -12,6 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
   self.ws = new WebSocket(`wss://upstartpy.onrender.com/ws/chat?token=${currentUser.access}`)
   ws.onopen = function() {
     console.log('🔌 Websocket connected');
+    hideLoadingModal();
   };
   
   ws.onmessage = function(e) {
@@ -314,4 +315,20 @@ function closeSidebarOnMobile() {
     sidebar.classList.remove("open")
     chatContainer.classList.remove("sidebar-open")
   }
+}
+
+// Helper function to hide loading modal with exit animation
+function hideLoadingModal() {
+  const loadingModal = document.getElementById("loadingModal");
+  if (!loadingModal) return;
+  
+  loadingModal.classList.remove("show");
+  loadingModal.classList.add("hide");
+  loadingModal.setAttribute("aria-hidden", "true");
+  
+  // Remove hide class after animation completes
+  setTimeout(() => {
+    loadingModal.classList.remove("hide");
+    document.body.classList.remove("loading-active");
+  }, 600);
 }

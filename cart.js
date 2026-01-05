@@ -341,4 +341,21 @@ document.addEventListener("DOMContentLoaded", () => {
     window.location.href = "login.html"
   }
   renderCartItems()
+  hideLoadingModal()
 })
+
+// Helper function to hide loading modal with exit animation
+function hideLoadingModal() {
+  const loadingModal = document.getElementById("loadingModal");
+  if (!loadingModal) return;
+  
+  loadingModal.classList.remove("show");
+  loadingModal.classList.add("hide");
+  loadingModal.setAttribute("aria-hidden", "true");
+  
+  // Remove hide class after animation completes
+  setTimeout(() => {
+    loadingModal.classList.remove("hide");
+    document.body.classList.remove("loading-active");
+  }, 600);
+}

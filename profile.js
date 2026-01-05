@@ -53,6 +53,7 @@ async function loadUserProfile() {
   select.disabled = true;
   bio.disabled = true;
   document.getElementById("university").value = user.institute
+  hideLoadingModal()
 }
 
 // Edit profile

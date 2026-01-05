@@ -29,7 +29,9 @@ async function loadVendorProfile() {
 
     loadVendorProducts(vendorId)
     loadVendorVideos()
+    hideLoadingModal()
   }catch(error){
+    hideLoadingModal()
     console.log(error)
   }
 
@@ -77,7 +79,9 @@ async function loadVendorProducts(vendorId) {
       `,
       )
       .join("")
+    hideLoadingModal()
   }catch(error){
+    hideLoadingModal()
 
   }
 
@@ -161,6 +165,7 @@ async function loadVendorContent() {
     const items = await res.json()
     if (!Array.isArray(items) || items.length === 0) {
       grid.innerHTML = `<div class="empty-inventory" style="grid-column: 1/-1;"><div class="empty-icon">🎬</div><p class="empty-text">No content available from this vendor.</p></div>`
+      hideLoadingModal()
       return
     }
     // expose items to the global scope so we can safely reference them from inline
@@ -180,8 +185,10 @@ async function loadVendorContent() {
         </div>
       `
     }).join('')
+    hideLoadingModal()
 
   } catch (err) {
+    hideLoadingModal()
     console.error('Error loading vendor content', err)
     grid.innerHTML = `<div class="empty-inventory" style="grid-column: 1/-1;"><p class="empty-text">Failed to load content.</p></div>`
   }
@@ -254,6 +261,22 @@ async function openProductModal(productId) {
 
 function closeProductModal() {
   document.getElementById("productModal").classList.remove("active")
+}
+
+// Helper function to hide loading modal with exit animation
+function hideLoadingModal() {
+  const loadingModal = document.getElementById("loadingModal");
+  if (!loadingModal) return;
+  
+  loadingModal.classList.remove("show");
+  loadingModal.classList.add("hide");
+  loadingModal.setAttribute("aria-hidden", "true");
+  
+  // Remove hide class after animation completes
+  setTimeout(() => {
+    loadingModal.classList.remove("hide");
+    document.body.classList.remove("loading-active");
+  }, 600);
 }
 
 document.addEventListener("DOMContentLoaded", () => {

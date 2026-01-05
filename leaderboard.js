@@ -41,9 +41,10 @@ async function loadLeaderboard() {
     
     const products = await response.json();
     loadTrendingProducts(products);
+    hideLoadingModal();
 
   }catch(error){
-
+    hideLoadingModal();
   }
 
   // Sort products by views
@@ -222,6 +223,21 @@ function loadVendorPage(vendorId){
   window.location.href = `vendor-profile.html?vendorId=${vendorId}`
 }
 
+// Helper function to hide loading modal with exit animation
+function hideLoadingModal() {
+  const loadingModal = document.getElementById("loadingModal");
+  if (!loadingModal) return;
+  
+  loadingModal.classList.remove("show");
+  loadingModal.classList.add("hide");
+  loadingModal.setAttribute("aria-hidden", "true");
+  
+  // Remove hide class after animation completes
+  setTimeout(() => {
+    loadingModal.classList.remove("hide");
+    document.body.classList.remove("loading-active");
+  }, 600);
+}
 
 document.addEventListener("DOMContentLoaded", () => {
   loadLeaderboard()

@@ -24,9 +24,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.log(products[0].id);
 
     renderProducts(products);
+    hideLoadingModal();
 
   }catch(error){
     console.error('Error loading products (index.js):', error);
+    hideLoadingModal();
   }
 
 })
@@ -388,4 +390,20 @@ async function addToCartFromModal(productId) {
   }
 
   closeProductModal()
+}
+
+// Helper function to hide loading modal with exit animation
+function hideLoadingModal() {
+  const loadingModal = document.getElementById("loadingModal");
+  if (!loadingModal) return;
+  
+  loadingModal.classList.remove("show");
+  loadingModal.classList.add("hide");
+  loadingModal.setAttribute("aria-hidden", "true");
+  
+  // Remove hide class after animation completes
+  setTimeout(() => {
+    loadingModal.classList.remove("hide");
+    document.body.classList.remove("loading-active");
+  }, 600);
 }

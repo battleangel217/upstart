@@ -42,6 +42,7 @@ async function loadInventory() {
                   <p class="empty-text">No products listed yet. Click the + button to add your first product!</p>
               </div>
           `
+      hideLoadingModal()
       return
     }
 
@@ -66,8 +67,9 @@ async function loadInventory() {
       `,
       )
       .join("")
+    hideLoadingModal()
   }catch(error){
-
+    hideLoadingModal()
   }
 
 }
