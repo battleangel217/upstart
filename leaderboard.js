@@ -64,10 +64,10 @@ function loadVendorsList(vendors) {
       else if (index === 2) rankClass = "bronze"
 
       return `
-            <div class="leaderboard-item">
+            <div class="leaderboard-item" onclick="loadVendorPage(${vendor.vendor})">
                 <div class="rank-badge ${rankClass}">${index + 1}</div>
                 <img src="${vendor.pfp || "/placeholder.svg?height=48&width=48"}" alt="${vendor.username}" class="leaderboard-item-avatar">
-                <div class="leaderboard-item-info">
+                <div class="leaderboard-item-info" id="leaderboardItemInfo">
                     <div class="leaderboard-item-name">${vendor.username}</div>
                     <div class="leaderboard-item-details">${vendor.institute}</div>
                 </div>
@@ -86,6 +86,10 @@ function loadVendorsList(vendors) {
         `
     })
     .join("")
+
+    console.log(document.getElementById("leaderboardItemInfo"))
+
+    
 }
 
 function loadCustomersList(customers) {
@@ -139,52 +143,7 @@ async function loadTrendingProducts(products) {
   });
 }
 
-// function loadTopReviews() {
-//   const vendors = JSON.parse(localStorage.getItem("vendors")) || []
-//   const products = JSON.parse(localStorage.getItem("products")) || []
-//   const list = document.getElementById("reviewsList")
-
-//   const reviews = vendors.slice(0, 5).map((vendor, index) => ({
-//     author: vendor.name,
-//     product: products.find((p) => p.vendorId === vendor.id)?.name || "Premium Item",
-//     avatar: vendor.profilePicture || "/placeholder.svg?height=40&width=40",
-//     rating: vendor.averageRating || 5,
-//     text:
-//       [
-//         "Excellent quality and fast delivery!",
-//         "Great seller, would buy again",
-//         "Perfect condition as described",
-//         "Highly recommended!",
-//         "Amazing service and products!",
-//       ][index] || "Great experience",
-//   }))
-
-//   list.innerHTML = reviews
-//     .map(
-//       (review) => `
-//         <div class="review-item">
-//             <div class="review-header">
-//                 <img src="${review.avatar}" alt="${review.author}" class="review-avatar">
-//                 <div class="review-meta">
-//                     <div class="review-author">${review.author}</div>
-//                     <div class="review-product">${review.product}</div>
-//                 </div>
-//                 <div class="review-rating">
-//                     ${"⭐".repeat(Math.round(review.rating))}${"☆".repeat(5 - Math.round(review.rating))}
-//                 </div>
-//             </div>
-//             <div class="review-text">"${review.text}"</div>
-//         </div>
-//     `,
-//     )
-//     .join("")
-// }
-
 function openProductModal(product) {
-
-
-  // const vendor = JSON.parse(localStorage.getItem("vendors") || "[]").find((v) => v.id === product.vendorId)
-
   const html = `
         <div style="padding: 32px;">
             <img src="${product.image_url[0]}" style="width: 100%; border-radius: 12px; margin-bottom: 16px;">
@@ -259,10 +218,11 @@ document.getElementById("productModal").addEventListener("click", function (e) {
   if (e.target === this) this.classList.remove("active")
 })
 
+function loadVendorPage(vendorId){
+  window.location.href = `vendor-profile.html?vendorId=${vendorId}`
+}
+
+
 document.addEventListener("DOMContentLoaded", () => {
-  // const currentUser = JSON.parse(localStorage.getItem("userData"))
-  // if (!currentUser) {
-  //   window.location.href = "login.html"
-  // }
   loadLeaderboard()
 })

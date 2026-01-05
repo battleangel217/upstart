@@ -18,7 +18,7 @@ async function initializeNavigation() {
             ☰
           </button>
           <a href="index.html" class="logo" title="Home">
-            <img src="https://icuklzexzhusblkzglnr.supabase.co/storage/v1/object/public/marketplace/logo/Upstart-removebg-preview.png" alt="Upstart" class="logo-image">
+            <img src="https://icuklzexzhusblkzglnr.supabase.co/storage/v1/object/public/marketplace/logo/Upstart(2).png" alt="Upstart" class="logo-image">
           </a>
         </div>
 
@@ -126,6 +126,16 @@ async function initializeNavigation() {
 }
 
 function initializeNavbarEvents() {
+  // Hide search bar on non-landing pages
+  const isLandingPage = window.location.pathname.endsWith('index.html') || 
+                        window.location.pathname === '/' ||
+                        window.location.pathname.endsWith('/')
+  
+  const searchBar = document.querySelector('.search-bar')
+  if (searchBar && !isLandingPage) {
+    searchBar.style.display = 'none'
+  }
+
   // Mobile menu toggle
   const mobileMenuBtn = document.getElementById("mobileMenuBtn")
   const mobileMenuDropdown = document.getElementById("mobileMenuDropdown")
@@ -393,46 +403,4 @@ if (document.readyState === "loading") {
   initializeNavigation()
 }
 
-document.head.innerHTML += `
-  <style>
-    .navbar {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      background: rgba(255, 255, 255, 0.9);
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid var(--border);
-      z-index: 100;
-      padding: 12px 20px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-      height: 70px;
-    }
-    
-    .logo-image {
-      height: 50px;
-      width: auto;
-      object-fit: contain;
-    }
-    
-    @media (max-width: 768px) {
-      .navbar {
-        padding: 8px 12px;
-      }
-      
-      .logo-image {
-        height: 45px;
-      }
-    }
-    
-    @media (max-width: 480px) {
-      .navbar {
-        padding: 6px 10px;
-      }
-      
-      .logo-image {
-        height: 40px;
-      }
-    }
-  </style>
-`
+

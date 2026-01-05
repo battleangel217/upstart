@@ -1,4 +1,16 @@
 async function loadWalletData() {
+  // Check if returning from payment
+  const pendingReference = sessionStorage.getItem("pendingPaymentReference")
+  const pendingAmount = sessionStorage.getItem("pendingPaymentAmount")
+  
+  if (pendingReference && pendingAmount) {
+    sessionStorage.removeItem("pendingPaymentReference")
+    sessionStorage.removeItem("pendingPaymentAmount")
+    
+    // Verify the payment
+    await verifyPayment(pendingReference, parseFloat(pendingAmount))
+  }
+
   const currentUser = JSON.parse(localStorage.getItem("userData"))
   if (!currentUser) {
     window.location.href = "login.html"
@@ -23,6 +35,52 @@ async function loadWalletData() {
   }
 
   loadTransactionHistory()
+}
+
+async function verifyPayment(reference, amount) {
+  const currentUser = JSON.parse(localStorage.getItem("userData"))
+  
+  try {
+    showPaymentModal()
+    showPaymentState("loading")
+
+    // Verify payment with backend
+    const response = await fetch(`http://127.0.0.1:8000/wallet/verify-topup/${reference}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${currentUser.access}`
+      }
+    })
+
+    const result = await response.json()
+    console.log("Verification result:", result)
+
+    if (response.ok && result.status === "success") {
+      // Payment successful
+      showPaymentState("success", {
+        amount: `$${amount.toFixed(2)}`,
+        reference: reference
+      })
+      
+      // Reload wallet data after a short delay
+      setTimeout(() => {
+        loadWalletData()
+      }, 2000)
+    } else {
+      // Payment failed
+      showPaymentState("failed", {
+        reference: reference,
+        message: result.message || "Payment verification failed. Please try again."
+      })
+    }
+  } catch (error) {
+    console.error("Verification error:", error)
+    showPaymentState("failed", {
+      reference: reference,
+      message: "Unable to verify payment. Please contact support."
+    })
+  }
 }
 
 function loadTransactionHistory() {
@@ -77,63 +135,118 @@ function closeAllDrawers() {
   document.getElementById("drawerOverlay").classList.remove("active")
 }
 
+//Changess
+// Payment Modal Functions
+function showPaymentModal() {
+  document.getElementById("paymentModal").classList.add("active")
+  document.getElementById("paymentModalOverlay").classList.add("active")
+}
+
+function closePaymentModal() {
+  document.getElementById("paymentModal").classList.remove("active")
+  document.getElementById("paymentModalOverlay").classList.remove("active")
+}
+
+function showPaymentState(state, data = {}) {
+  // Hide all states first
+  document.getElementById("loadingState").style.display = "none"
+  document.getElementById("successState").style.display = "none"
+  document.getElementById("failedState").style.display = "none"
+
+  if (state === "loading") {
+    document.getElementById("loadingState").style.display = "block"
+  } else if (state === "success") {
+    document.getElementById("successState").style.display = "block"
+    document.getElementById("successAmount").textContent = data.amount
+    document.getElementById("successReference").textContent = data.reference || "-"
+  } else if (state === "failed") {
+    document.getElementById("failedState").style.display = "block"
+    document.getElementById("failedReference").textContent = data.reference || "-"
+    document.getElementById("failedMessage").textContent = data.message || "Your payment could not be processed. Please try again."
+  }
+}
+
+// Store payment data for retry
+let lastPaymentAmount = 0;
+
+function retryPayment() {
+  closePaymentModal()
+  // Reopen the add money drawer with the amount
+  if (lastPaymentAmount > 0) {
+    document.getElementById("addMoneyAmount").value = lastPaymentAmount
+  }
+  document.getElementById("addMoneyDrawer").classList.add("active")
+  document.getElementById("drawerOverlay").classList.add("active")
+}
+
+
 document.getElementById("submitAddMoney").addEventListener("click", async () => {
   const currentUser = JSON.parse(localStorage.getItem("userData"))
   if (!currentUser) {
     window.location.href = "login.html"
     return
   }
+  
   const amount = Number.parseFloat(document.getElementById("addMoneyAmount").value)
   if (!amount || amount <= 0) {
     alert("Please enter a valid amount")
     document.getElementById("addMoneyAmount").value = null
-
     return
   }
 
-  try{
-    const response = await fetch('http://127.0.0.1:8000/wallet/topup',
-      {
-        method: "POST",
-        headers: {
-          "Content-Type":"application/json",
-          "Authorization":`Bearer ${currentUser.access}`
-        },
-        body: JSON.stringify({amount})
-      });
-
-      const details = await response.json();
-      console.log(details.details.data.authorization_url)
-
-      if (details && details.details && details.details.data.authorization_url) {
-        // Redirect to Paystack payment page
-        window.location.href = details.details.data.authorization_url;
-      } else {
-        setError('Failed to initialize top-up');
-      }
-
-    const reference = await fetch(`http://127.0.0.1:8000//wallet/verify-topup/${details.details.data.reference}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type":"application/json",
-          "Authorization":`Bearer ${currentUser.access}`
-        }
-      })
-
-      const ref = await reference.json()
-      
-
-  }catch(error){
-    alert('Transaction failed')
-    throw new Error(`HTTP error! status`)
-  }
-  alert(`Successfully added $${amount.toFixed(2)} to your wallet!`)
-  closeDrawer("addMoneyDrawer")
-  loadWalletData()
-  document.getElementById("addMoneyAmount").value = ""
+  lastPaymentAmount = amount
   
+  try {
+    // Close the drawer and show loading modal
+    closeDrawer("addMoneyDrawer")
+    showPaymentModal()
+    showPaymentState("loading")
+
+    // Step 1: Initialize payment with backend
+    const response = await fetch('http://127.0.0.1:8000/wallet/topup', {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${currentUser.access}`
+      },
+      body: JSON.stringify({ amount })
+    })
+
+    if (!response.ok) {
+      throw new Error(`Payment initialization failed: ${response.statusText}`)
+    }
+
+    const details = await response.json()
+    console.log("Payment details:", details)
+
+    if (!details || !details.details || !details.details.data || !details.details.data.authorization_url) {
+      showPaymentState("failed", {
+        reference: "N/A",
+        message: "Failed to initialize payment. Please try again."
+      })
+      return
+    }
+
+    // Store reference for later verification
+    const paymentReference = details.details.data.reference
+    
+    // Step 2: Redirect to Paystack
+    // We'll handle verification when user returns
+    sessionStorage.setItem("pendingPaymentReference", paymentReference)
+    sessionStorage.setItem("pendingPaymentAmount", amount)
+    
+    window.location.href = details.details.data.authorization_url
+    
+  } catch (error) {
+    console.error("Payment error:", error)
+    showPaymentState("failed", {
+      reference: "N/A",
+      message: "An error occurred. Please try again."
+    })
+  }
 })
+
+//Changes end
 
 document.getElementById("submitWithdraw").addEventListener("click", () => {
   const amount = Number.parseFloat(document.getElementById("withdrawAmount").value)

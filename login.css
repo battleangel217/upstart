@@ -31,31 +31,35 @@ body {
   max-width: 420px;
 }
 
+/* Logo styling */
+.logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none;
+  font-weight: 700;
+  color: var(--primary);
+  font-size: 18px;
+  width: 100%;
+  height: 48px;
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+.logo-image {
+  height: 110px;
+  width: 137px;
+  display: block;
+  object-fit: cover;
+  object-position: 30% 40%;
+}
+
 .login-card {
   background: var(--white);
   border-radius: 12px;
   padding: 40px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
-.logo {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  margin-bottom: 30px;
-}
-
-.logo-icon {
-  font-size: 32px;
-  color: var(--accent);
-  font-weight: bold;
-}
-
-.logo h1 {
-  font-size: 28px;
-  color: var(--primary);
-  font-weight: 700;
 }
 
 h2 {
@@ -191,6 +195,10 @@ select:focus {
     padding: 35px 25px;
     margin: 0 auto;
   }
+
+  .logo-image {
+    height: 88px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -203,15 +211,16 @@ select:focus {
   }
 
   .logo {
-    margin-bottom: 24px;
+    /* allow the logo container to grow so larger image isn't cropped */
+    width: auto;
+    height: auto;
+    overflow: visible;
   }
 
   .logo-image {
-    height: 60px;
-  }
-
-  .logo h1 {
-    font-size: 24px;
+    height: 100px;
+    object-position: 30% 50%;
+    width: 170px;
   }
 
   h2 {

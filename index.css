@@ -117,7 +117,9 @@ body {
     overflow: visible;
   }
   .logo-image {
-    height: 88px; /* larger on phones so it remains visible */
+    height: 51px; 
+    object-position: 30% 50%;
+    width: 80px;/* larger on phones so it remains visible */
   }
   .login-card .logo .logo-image,
   .signup-card .logo .logo-image {
@@ -1416,6 +1418,7 @@ body {
   /* Show mobile menu button, hide desktop nav items */
   .mobile-menu-btn {
     display: block;
+    margin-right: 8px;
   }
 
   .desktop-only {

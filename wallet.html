@@ -87,6 +87,67 @@
 
     <div class="drawer-overlay" id="drawerOverlay" onclick="closeAllDrawers()"></div>
 
+    <!-- Payment Verification Modal -->
+    <div class="payment-modal" id="paymentModal">
+        <div class="payment-modal-content">
+            <div class="payment-status" id="paymentStatus">
+                <!-- Success State -->
+                <div id="successState" class="status-state">
+                    <div class="status-icon success">
+                        <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+                            <circle cx="32" cy="32" r="32" fill="#4ad77c"/>
+                            <path d="M27 35L21 29M27 35L43 19" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                        </svg>
+                    </div>
+                    <h3>Payment Successful!</h3>
+                    <p id="successMessage">Your wallet has been topped up successfully.</p>
+                    <div class="transaction-details">
+                        <div class="detail-row">
+                            <span class="detail-label">Amount Added:</span>
+                            <span class="detail-value" id="successAmount">$0.00</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Reference:</span>
+                            <span class="detail-value" id="successReference">-</span>
+                        </div>
+                    </div>
+                    <button class="btn-primary" onclick="closePaymentModal()">Done</button>
+                </div>
+
+                <!-- Failed State -->
+                <div id="failedState" class="status-state" style="display:none;">
+                    <div class="status-icon failed">
+                        <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+                            <circle cx="32" cy="32" r="32" fill="#ff4d4d"/>
+                            <path d="M22 22L42 42M42 22L22 42" stroke="white" stroke-width="3" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <h3>Payment Failed</h3>
+                    <p id="failedMessage">Your payment could not be processed. Please try again.</p>
+                    <div class="transaction-details">
+                        <div class="detail-row">
+                            <span class="detail-label">Reference:</span>
+                            <span class="detail-value" id="failedReference">-</span>
+                        </div>
+                    </div>
+                    <button class="btn-primary" onclick="retryPayment()">Try Again</button>
+                </div>
+
+                <!-- Loading State -->
+                <div id="loadingState" class="status-state">
+                    <div class="status-icon loading">
+                        <div class="spinner"></div>
+                    </div>
+                    <h3>Verifying Payment</h3>
+                    <p>Please wait while we verify your payment...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Overlay -->
+    <div class="payment-modal-overlay" id="paymentModalOverlay"></div>
+
     <!-- Added shared-nav.js to inject universal navbar -->
     <script src="auth-utils.js"></script>
     <script src="shared-nav.js"></script>

@@ -153,7 +153,7 @@ async function loadVendorContent() {
 
   try {
     // Fetch content posted by this specific vendor
-    const res = await fetch(`http://127.0.0.1:8000/customers/vendor-contents/${vendorId}`, {
+    const res = await fetch(`http://127.0.0.1:8000/customers/vendorcontents/${vendorId}`, {
       method: 'GET',
       headers: { 'Authorization': `Bearer ${currentUser.access}` }
     })
