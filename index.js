@@ -24,7 +24,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.log(products[0].id);
 
     renderProducts(products);
-    hideLoadingModal();
 
   }catch(error){
     console.error('Error loading products (index.js):', error);
@@ -74,6 +73,7 @@ function renderProducts(product) {
       //   openProductModal(item.id);
       // })
   })
+  hideLoadingModal();
 
 }
 
