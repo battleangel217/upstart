@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const error = await response.json()
       console.log(error)
     }
+    if (response.ok) hideLoadingModal();
 
     const products = await response.json();
     console.log(products[0].id);
@@ -73,7 +74,6 @@ function renderProducts(product) {
       //   openProductModal(item.id);
       // })
   })
-  hideLoadingModal();
 
 }
 

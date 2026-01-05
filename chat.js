@@ -40,6 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
     
   ws.onerror = function(error) {
     console.error('❌ WebSocket error:', error);
+    hideLoadingModal()
   };
 
   // Reset scroll positions to default on page load.
