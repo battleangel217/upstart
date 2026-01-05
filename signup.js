@@ -299,7 +299,7 @@ document.getElementById("signupForm").addEventListener("submit", async (e) => {
   console.log(newUser);
 
   try{
-    const response = await fetch('https://market-api-5lg1.onrender.com/auth/users/',
+    const response = await fetch('http://127.0.0.1:8000/auth/users/',
       {
         method: "POST",
         headers: {"Content-Type":"application/json"},
