@@ -281,8 +281,16 @@ if (_fileInputElem) {
 document.getElementById("addProductForm").addEventListener("submit", async (e) => {
   e.preventDefault()
 
+  // Show loading modal
+  const loadingModal = document.getElementById("loadingModal");
+  loadingModal.classList.remove("hide");
+  loadingModal.classList.add("show");
+  loadingModal.setAttribute("aria-hidden", "false");
+  document.body.classList.add("loading-active");
+
   const currentUser = JSON.parse(localStorage.getItem("userData"))
   if (!currentUser) {
+    hideLoadingModal();
     window.location.href = "login.html"
     return
   }
@@ -312,6 +320,7 @@ document.getElementById("addProductForm").addEventListener("submit", async (e) =
         fd.append('image_url', file)  // Append each file individually
     })   
   }else{
+    hideLoadingModal();
     alert("An image is required")
     return
   }
@@ -328,6 +337,7 @@ document.getElementById("addProductForm").addEventListener("submit", async (e) =
     })
 
     if (response.ok) {
+      hideLoadingModal();
       alert('Product added successfully!')
       document.getElementById('addProductForm').reset()
       document.getElementById('addProductModal').classList.remove('active')
@@ -335,11 +345,13 @@ document.getElementById("addProductForm").addEventListener("submit", async (e) =
       clearSelectedFiles()
       loadInventory()
     } else {
+      hideLoadingModal();
       const err = await response.json().catch(() => ({}))
       console.error('Server error adding product:', err)
       alert(err.detail || 'Failed to add product (server error)')
     }
   } catch (error) {
+    hideLoadingModal();
     console.error('Network error adding product, saving locally:', error)
 
   }
@@ -703,9 +715,18 @@ const uploadModalForm = document.getElementById('uploadModalForm')
 if (uploadModalForm) {
   uploadModalForm.addEventListener('submit', async (e) => {
     e.preventDefault()
+
+    // Show loading modal
+    const loadingModal = document.getElementById("loadingModal");
+    loadingModal.classList.remove("hide");
+    loadingModal.classList.add("show");
+    loadingModal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("loading-active");
+
     const caption = document.getElementById('caption')?.value?.trim() || '';
     
     if (!caption) {
+      hideLoadingModal();
       alert('Please enter a title and description for your content.');
       return;
     }
@@ -713,6 +734,7 @@ if (uploadModalForm) {
     // Get current user
     const currentUser = JSON.parse(localStorage.getItem("userData"));
     if (!currentUser?.access) {
+      hideLoadingModal();
       alert('Authentication required. Please log in.');
       window.location.href = "login.html"
       return;
@@ -737,10 +759,12 @@ if (uploadModalForm) {
       });
       
       if (!response.ok) {
+        hideLoadingModal();
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.message || 'Failed to upload content');
       }
       
+      hideLoadingModal();
       alert('Content added successfully!');
       uploadModalForm.reset()
       if (contentVideoInput) contentVideoInput.value = ''
@@ -749,8 +773,24 @@ if (uploadModalForm) {
       document.getElementById('uploadContentModal')?.classList.remove('active')
       
     } catch (error) {
+      hideLoadingModal();
       console.error('Upload error:', error);
       alert(error.message || 'An error occurred while uploading. Please try again.');
     }
   })
 }
+
+// Helper function to hide loading modal with exit animation
+function hideLoadingModal() {
+  const loadingModal = document.getElementById("loadingModal");
+  loadingModal.classList.remove("show");
+  loadingModal.classList.add("hide");
+  loadingModal.setAttribute("aria-hidden", "true");
+  
+  // Remove hide class after animation completes
+  setTimeout(() => {
+    loadingModal.classList.remove("hide");
+    document.body.classList.remove("loading-active");
+  }, 600);
+}
+

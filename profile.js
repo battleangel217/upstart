@@ -71,8 +71,16 @@ document.getElementById("editBtn").addEventListener("click", () => {
 
 // Save changes
 document.getElementById("saveBtn").addEventListener("click", async () => {
+  // Show loading modal
+  const loadingModal = document.getElementById("loadingModal");
+  loadingModal.classList.remove("hide");
+  loadingModal.classList.add("show");
+  loadingModal.setAttribute("aria-hidden", "false");
+  document.body.classList.add("loading-active");
+
   const currentUser = JSON.parse(localStorage.getItem("userData"))
   if (!currentUser) {
+    hideLoadingModal();
     window.location.href = "login.html"
     return
   }
@@ -92,6 +100,7 @@ document.getElementById("saveBtn").addEventListener("click", async () => {
       })
 
     if (response.ok){
+      hideLoadingModal();
       const data = await response.json()
       alert("Profile updated successfully!")
       currentUser.user.bio = data.bio
@@ -108,11 +117,13 @@ document.getElementById("saveBtn").addEventListener("click", async () => {
       document.getElementById("saveBtn").style.display = "none"
       document.getElementById("cancelBtn").style.display = "none"
       loadUserProfile()
+    } else {
+      hideLoadingModal();
     }
 
 
   }catch(error){
-
+    hideLoadingModal();
   }
 
 
@@ -173,6 +184,20 @@ document.getElementById("photoInput").addEventListener("change", async (e) => {
 
   }
 })
+
+// Helper function to hide loading modal with exit animation
+function hideLoadingModal() {
+  const loadingModal = document.getElementById("loadingModal");
+  loadingModal.classList.remove("show");
+  loadingModal.classList.add("hide");
+  loadingModal.setAttribute("aria-hidden", "true");
+  
+  // Remove hide class after animation completes
+  setTimeout(() => {
+    loadingModal.classList.remove("hide");
+    document.body.classList.remove("loading-active");
+  }, 600);
+}
 
 // // Logout
 // document.getElementById("logoutBtn").addEventListener("click", () => {
