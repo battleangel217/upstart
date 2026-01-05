@@ -6,6 +6,7 @@
     <title>Vendor Profile - Upstart</title>
     <link rel="stylesheet" href="index.css">
     <link rel="stylesheet" href="vendor-profile.css">
+    <link rel="stylesheet" href="skeleton-loader.css">
 </head>
 <body>
     <!-- Removed custom navbar - now uses shared navbar injected by shared-nav.js -->
@@ -14,20 +15,15 @@
         <div class="vendor-container">
             <!-- Profile Card -->
             <div class="profile-section">
-                <div class="vendor-header">
-                    <img id="vendorImage" src="/placeholder.svg?height=120&width=120" alt="Vendor" class="vendor-avatar">
-                    <div class="vendor-header-info">
-                        <h1 id="vendorName"></h1>
-                        <p id="vendorUniversity"></p>
-                        <p id="vendorDepartment"></p>
-                        <p id="vendorEmail" class="vendor-contact"></p>
-                        <p id="vendorPhone" class="vendor-contact"></p>
-                        <div class="vendor-rating">
-                            <span class="stars" id="vendorRating">★★★★★</span>
-                            <span id="reviewCount">(0 reviews)</span>
-                        </div>
+                <div class="vendor-header-skeleton">
+                    <div class="skeleton-vendor-avatar skeleton-loader"></div>
+                    <div class="vendor-info-skeleton" style="flex: 1;">
+                        <div class="skeleton-vendor-name skeleton-loader"></div>
+                        <div class="skeleton-vendor-detail skeleton-loader"></div>
+                        <div class="skeleton-vendor-detail skeleton-loader"></div>
+                        <div class="skeleton-vendor-detail skeleton-loader"></div>
+                        <div class="skeleton-vendor-button skeleton-loader"></div>
                     </div>
-                    <button class="btn-secondary" id="contactBtn">Contact Vendor</button>
                 </div>
 
                 <!-- About Section -->
@@ -62,8 +58,36 @@
 
             <!-- Products Section (default visible) -->
             <section id="productsSection">
-                <div class="products-grid" id="productsGrid">
-                    <!-- Products will be inserted here -->
+                <div class="products-grid skeleton-grid" id="productsGrid">
+                    <!-- Product Skeleton Loaders -->
+                    <div class="product-card-skeleton">
+                        <div class="skeleton-image skeleton-loader"></div>
+                        <div class="skeleton-title skeleton-loader"></div>
+                        <div class="skeleton-text skeleton-loader"></div>
+                        <div class="skeleton-text skeleton-loader"></div>
+                        <div class="skeleton-button skeleton-loader"></div>
+                    </div>
+                    <div class="product-card-skeleton">
+                        <div class="skeleton-image skeleton-loader"></div>
+                        <div class="skeleton-title skeleton-loader"></div>
+                        <div class="skeleton-text skeleton-loader"></div>
+                        <div class="skeleton-text skeleton-loader"></div>
+                        <div class="skeleton-button skeleton-loader"></div>
+                    </div>
+                    <div class="product-card-skeleton">
+                        <div class="skeleton-image skeleton-loader"></div>
+                        <div class="skeleton-title skeleton-loader"></div>
+                        <div class="skeleton-text skeleton-loader"></div>
+                        <div class="skeleton-text skeleton-loader"></div>
+                        <div class="skeleton-button skeleton-loader"></div>
+                    </div>
+                    <div class="product-card-skeleton">
+                        <div class="skeleton-image skeleton-loader"></div>
+                        <div class="skeleton-title skeleton-loader"></div>
+                        <div class="skeleton-text skeleton-loader"></div>
+                        <div class="skeleton-text skeleton-loader"></div>
+                        <div class="skeleton-button skeleton-loader"></div>
+                    </div>
                 </div>
             </section>
 

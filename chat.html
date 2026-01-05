@@ -6,6 +6,7 @@
     <title>Messages - Upstart</title>
     <link rel="stylesheet" href="index.css">
     <link rel="stylesheet" href="chat.css">
+    <link rel="stylesheet" href="skeleton-loader.css">
 </head>
 <body>
     <!-- Added universal navbar to chat page -->
@@ -17,8 +18,29 @@
             <div class="sidebar-header">
                 <h2>Messages</h2>
             </div>
-            <div class="conversations-list" id="conversationsList">
-                <!-- Conversations will be inserted here -->
+            <div class="conversations-list skeleton-list" id="conversationsList">
+                <!-- Conversation Skeleton Loaders -->
+                <div class="conversation-skeleton">
+                    <div class="skeleton-large-avatar skeleton-loader"></div>
+                    <div class="conversation-info-skeleton" style="flex: 1;">
+                        <div class="skeleton-name skeleton-loader"></div>
+                        <div class="skeleton-message skeleton-loader"></div>
+                    </div>
+                </div>
+                <div class="conversation-skeleton">
+                    <div class="skeleton-large-avatar skeleton-loader"></div>
+                    <div class="conversation-info-skeleton" style="flex: 1;">
+                        <div class="skeleton-name skeleton-loader"></div>
+                        <div class="skeleton-message skeleton-loader"></div>
+                    </div>
+                </div>
+                <div class="conversation-skeleton">
+                    <div class="skeleton-large-avatar skeleton-loader"></div>
+                    <div class="conversation-info-skeleton" style="flex: 1;">
+                        <div class="skeleton-name skeleton-loader"></div>
+                        <div class="skeleton-message skeleton-loader"></div>
+                    </div>
+                </div>
             </div>
         </div>
 
