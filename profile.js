@@ -23,7 +23,7 @@ async function loadUserProfile() {
   const select = document.getElementById('university');
   const bio = document.getElementById("bio");
   try{
-    const response = await fetch('http://universities.hipolabs.com/search?country=Nigeria',
+    const response = await fetch('https://university-domains-list-api-tn4l.onrender.com/search?country=Nigeria',
     {
       method: 'GET',
       headers: {"Content-Type":"application/json"}
