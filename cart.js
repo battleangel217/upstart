@@ -1,5 +1,57 @@
+// Toast notification utility
+function showToast(message, type = 'info', options = {}) {
+  const container = document.getElementById('toast-container') || (() => {
+    const el = document.createElement('div');
+    el.id = 'toast-container';
+    el.style.position = 'fixed';
+    el.style.top = '20px';
+    el.style.right = '20px';
+    el.style.zIndex = '9999';
+    document.body.appendChild(el);
+    return el;
+  })();
+
+  const timeout = options.timeout ?? 3500;
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.setAttribute('role', 'status');
+  toast.setAttribute('aria-live', 'polite');
+  toast.style.padding = '12px 16px';
+  toast.style.marginBottom = '8px';
+  toast.style.borderRadius = '4px';
+  toast.style.backgroundColor = type === 'error' ? '#f44336' : type === 'success' ? '#4caf50' : '#2196f3';
+  toast.style.color = 'white';
+  toast.style.fontSize = '14px';
+  toast.style.boxShadow = '0 2px 8px rgba(0,0,0,0.2)';
+
+  const text = document.createElement('div');
+  text.textContent = message;
+  toast.appendChild(text);
+
+  let removed = false;
+  function dismiss() {
+    if (removed) return;
+    removed = true;
+    toast.style.opacity = '0';
+    toast.style.transition = 'opacity 0.3s ease';
+    setTimeout(() => toast.remove(), 300);
+  }
+
+  container.appendChild(toast);
+  if (timeout > 0) {
+    setTimeout(dismiss, timeout);
+  }
+  return { dismiss };
+}
+
 async function renderCartItems() {
   const userData = JSON.parse(localStorage.getItem('userData'));
+  if (!userData) {
+    showToast('Please log in to view your cart', 'error');
+    window.location.href = 'login.html';
+    return;
+  }
+  
   try{
     const response = await fetch('https://upstartpy.onrender.com/cart/cart-items/',
       {
@@ -12,18 +64,23 @@ async function renderCartItems() {
       
     if (!response.ok){
       if(response.status === 401){
-        alert("Redirecting to login");
+        showToast('Session expired. Redirecting to login', 'error');
         window.location.href = "login.html";
+        return;
       }
+      console.error('Error fetching cart:', response.status);
+      showToast('Failed to load cart. Please try again.', 'error');
+      return;
     }
+
     const cart = await response.json();
-    console.log(cart);
+    console.log('Cart loaded successfully:', cart.length, 'items');
 
     const list = document.getElementById("cartItemsList");
-  // Clear existing list before rendering new items
-  list.innerHTML = "";
+    // Clear existing list before rendering new items
+    list.innerHTML = "";
 
-  if (cart.length === 0) {
+    if (!cart || cart.length === 0) {
       list.innerHTML = `
               <div class="empty-cart">
                   <div class="empty-cart-icon">🛒</div>
@@ -34,53 +91,55 @@ async function renderCartItems() {
       updateCartSummary();
       return
     }
-  cart.forEach((item) => {
-    // Normalize possible item shapes (backend vs localStorage)
-    const productId = item.productId !== undefined ? item.productId : (item.product !== undefined ? item.product : (item.id !== undefined ? item.id : null));
-    const productPrice = Number(item.product_price ?? item.price ?? item.unit_price ?? 0);
-    const imageSrc = item.product_image[0]
-    console.log(item)
-    const itemName = item.product_name;
-    const vendorName = item.vendor_name ?? (item.vendor && item.vendor.name) ?? item.vendorName ?? '';
-    const quantity = Number(item.quantity ?? item.qty ?? 1);
 
-    const itemTotal = productPrice * quantity;
+    cart.forEach((item) => {
+      // Normalize possible item shapes (backend vs localStorage)
+      const productId = item.productId !== undefined ? item.productId : (item.product !== undefined ? item.product : (item.id !== undefined ? item.id : null));
+      const productPrice = Number(item.product_price ?? item.price ?? item.unit_price ?? 0);
+      
+      // Safely handle image array
+      const imageSrc = (item.product_image && Array.isArray(item.product_image) && item.product_image.length > 0) 
+        ? item.product_image[0] 
+        : '/placeholder.svg';
+      
+      const itemName = item.product_name;
+      const vendorName = item.vendor_name ?? (item.vendor && item.vendor.name) ?? item.vendorName ?? 'Unknown Vendor';
+      const quantity = Number(item.quantity ?? item.qty ?? 1);
 
-    // Guard: if we don't have a productId, skip rendering that item
-    if (productId === null) return;
+      const itemTotal = productPrice * quantity;
 
-    list.innerHTML += `
-    <div class="cart-item" onclick="openProductModal(${productId})">
-      <img src="${imageSrc}" alt="${itemName}" class="item-image">
-      <div class="item-details">
-        <div>
-          <div class="item-name">${itemName}</div>
-          <div class="item-price">$${productPrice.toFixed(2)}</div>
-          <div class="item-vendor">${vendorName}</div>
+      // Guard: if we don't have a productId, skip rendering that item
+      if (productId === null) {
+        console.warn('Skipping item with no product ID:', item);
+        return;
+      }
+
+      list.innerHTML += `
+      <div class="cart-item" onclick="openProductModal(${productId})">
+        <img src="${imageSrc}" alt="${itemName}" class="item-image" onerror="this.src='/placeholder.svg'">
+        <div class="item-details">
+          <div>
+            <div class="item-name">${itemName}</div>
+            <div class="item-price">$${productPrice.toFixed(2)}</div>
+            <div class="item-vendor">${vendorName}</div>
+          </div>
         </div>
-      </div>
-      <div class="item-actions">
-        <div class="quantity-control" onclick="event.stopPropagation()">
-          <!-- Allow custom quantity input for individual items -->
-          <button class="quantity-btn" onclick="updateQuantity(${productId}, -1)">−</button>
-          <input type="text" class="quantity-input" value="${quantity}" readonly>
-          <button class="quantity-btn" onclick="updateQuantity(${productId}, 1)">+</button>
+        <div class="item-actions">
+          <div class="quantity-control" onclick="event.stopPropagation()">
+            <button class="quantity-btn" onclick="updateQuantity(${productId}, -1)">−</button>
+            <input type="text" class="quantity-input" value="${quantity}" readonly>
+            <button class="quantity-btn" onclick="updateQuantity(${productId}, 1)">+</button>
+          </div>
+          <button class="remove-btn" onclick="event.stopPropagation(); removeFromCart(${productId})">Remove</button>
         </div>
-        <div class="item-checkout" onclick="event.stopPropagation()">
-        </div>
-        <label for="checkout">Checkout</label>
-        <input type="checkbox" name="" id="">
-        <button class="remove-btn" onclick="event.stopPropagation(); removeFromCart(${productId})">Remove</button>
-      </div>
-    </div>`
-  })
+      </div>`
+    })
 
-    // list.innerHTML = html;
     updateCartSummary()
   }catch(error){
-    return;
+    console.error('Error loading cart:', error);
+    showToast('Failed to load cart. Check your connection.', 'error');
   }
-  
 }
 
 function removeFromCart(productId) {
@@ -105,6 +164,11 @@ function updateQuantity(productId, change) {
 
 async function updateCartSummary() {
   const userData = JSON.parse(localStorage.getItem('userData'));
+  if (!userData) {
+    console.warn('No user data found for cart summary');
+    return;
+  }
+
   try{
     const response = await fetch('https://upstartpy.onrender.com/cart/cart-items/',
       {
@@ -117,30 +181,43 @@ async function updateCartSummary() {
       
     if (!response.ok){
       if(response.status === 401){
-        alert("Redirecting to login");
+        showToast('Session expired. Please log in again.', 'error');
         window.location.href = "login.html";
+        return;
       }
+      console.error('Error fetching cart summary:', response.status);
+      showToast('Failed to update cart summary.', 'error');
+      return;
     }
+
     const cart = await response.json();
 
-    let subtotal = 0
-    cart.forEach((item) => {
-      subtotal += item.product_price * item.quantity
-    })
+    let subtotal = 0;
+    if (cart && Array.isArray(cart)) {
+      cart.forEach((item) => {
+        const price = Number(item.product_price ?? item.price ?? 0);
+        const qty = Number(item.quantity ?? 1);
+        subtotal += price * qty;
+      })
+    }
 
-    const shipping = cart.length > 0 ? 5 : 0
-    const tax = subtotal * 0.08
-    const total = subtotal + shipping + tax
+    const shipping = cart && cart.length > 0 ? 5 : 0;
+    const tax = subtotal * 0.08;
+    const total = subtotal + shipping + tax;
 
-    document.getElementById("subtotal").textContent = `$${subtotal.toFixed(2)}`
-    document.getElementById("shipping").textContent = `$${shipping.toFixed(2)}`
-    document.getElementById("tax").textContent = `$${tax.toFixed(2)}`
-    document.getElementById("total").textContent = `$${total.toFixed(2)}`
+    const subtotalEl = document.getElementById("subtotal");
+    const shippingEl = document.getElementById("shipping");
+    const taxEl = document.getElementById("tax");
+    const totalEl = document.getElementById("total");
+
+    if (subtotalEl) subtotalEl.textContent = `$${subtotal.toFixed(2)}`;
+    if (shippingEl) shippingEl.textContent = `$${shipping.toFixed(2)}`;
+    if (taxEl) taxEl.textContent = `$${tax.toFixed(2)}`;
+    if (totalEl) totalEl.textContent = `$${total.toFixed(2)}`;
   }catch(error){
-
+    console.error('Error updating cart summary:', error);
+    showToast('Failed to update cart summary. Check your connection.', 'error');
   }
-
-  
 }
 
 function getVendor(vendorId) {
@@ -149,6 +226,7 @@ function getVendor(vendorId) {
 }
 
 async function openProductModal(productId) {
+  try {
     const response = await fetch(`https://upstartpy.onrender.com/products/${productId}`,
       {
         method: "GET",
@@ -156,36 +234,52 @@ async function openProductModal(productId) {
       }
     )
 
+    if (!response.ok) {
+      console.error('Error fetching product:', response.status);
+      showToast('Failed to load product details.', 'error');
+      return;
+    }
+
     const product = await response.json();
 
-  if (!product) return
+    if (!product) {
+      console.error('No product data received');
+      showToast('Product not found.', 'error');
+      return;
+    }
 
-  // const vendor = getVendor(product.vendorId)
+    const imageSrc = (product.image_url && Array.isArray(product.image_url) && product.image_url.length > 0)
+      ? product.image_url[0]
+      : '/placeholder.svg';
 
-  const html = `
-    <div style="display: grid; grid-template-columns: 1.8fr 1fr; gap: 20px; align-items: start;">
-      <div>
-        <img src="${product.image_url[0]}" style="width: 100%; max-height: 800px; object-fit: contain; border-radius: 8px;">
-      </div>
-            <div>
-                <h3 style="font-size: 20px; margin-bottom: 12px;">${product.product_name}</h3>
-                <div style="font-size: 24px; color: var(--accent); font-weight: 700; margin-bottom: 16px;">$${product.price}</div>
-                <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 16px;">${product.description}</p>
-                <div style="background: var(--secondary); padding: 12px; border-radius: 8px; margin-bottom: 16px;">
-                    <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 4px;">Location: <strong>${product.institute}</strong></div>
-                    <div style="font-size: 12px; color: var(--text-secondary);">Available: <strong>${product.quantity}</strong></div>
-                </div>
-                <div style="background: var(--secondary); padding: 12px; border-radius: 8px;">
-                    <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 8px;">Seller</div>
-                    <div style="font-size: 14px; font-weight: 600; margin-bottom: 4px;">${product.vendor_username}</div>
-                    <div style="font-size: 12px; color: var(--text-secondary);">${product.vendor_email}</div>
-                </div>
-            </div>
+    const html = `
+      <div style="display: grid; grid-template-columns: 1.8fr 1fr; gap: 20px; align-items: start;">
+        <div>
+          <img src="${imageSrc}" style="width: 100%; max-height: 800px; object-fit: contain; border-radius: 8px;" onerror="this.src='/placeholder.svg'">
         </div>
-    `
+              <div>
+                  <h3 style="font-size: 20px; margin-bottom: 12px;">${product.product_name}</h3>
+                  <div style="font-size: 24px; color: var(--accent); font-weight: 700; margin-bottom: 16px;">$${product.price}</div>
+                  <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 16px;">${product.description || 'No description available'}</p>
+                  <div style="background: var(--secondary); padding: 12px; border-radius: 8px; margin-bottom: 16px;">
+                      <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 4px;">Location: <strong>${product.institute || 'Unknown'}</strong></div>
+                      <div style="font-size: 12px; color: var(--text-secondary);">Available: <strong>${product.quantity || 0}</strong></div>
+                  </div>
+                  <div style="background: var(--secondary); padding: 12px; border-radius: 8px;">
+                      <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 8px;">Seller</div>
+                      <div style="font-size: 14px; font-weight: 600; margin-bottom: 4px;">${product.vendor_username || 'Unknown'}</div>
+                      <div style="font-size: 12px; color: var(--text-secondary);">${product.vendor_email || 'N/A'}</div>
+                  </div>
+              </div>
+          </div>
+      `
 
-  document.getElementById("productDetailsContainer").innerHTML = html
-  document.getElementById("productModal").classList.add("active")
+    document.getElementById("productDetailsContainer").innerHTML = html
+    document.getElementById("productModal").classList.add("active")
+  } catch(error) {
+    console.error('Error opening product modal:', error);
+    showToast('Failed to load product details. Check your connection.', 'error');
+  }
 }
 
 function checkoutItem(productId) {

@@ -304,8 +304,53 @@ function updateVendorMenu() {
   }
 }
 
+// Toast notification utility
+function showNavToast(message, type = 'info', options = {}) {
+  const container = document.getElementById('toast-container') || (() => {
+    const el = document.createElement('div');
+    el.id = 'toast-container';
+    el.style.position = 'fixed';
+    el.style.top = '20px';
+    el.style.right = '20px';
+    el.style.zIndex = '9999';
+    document.body.appendChild(el);
+    return el;
+  })();
+
+  const timeout = options.timeout ?? 3500;
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.setAttribute('role', 'status');
+  toast.setAttribute('aria-live', 'polite');
+  toast.style.padding = '12px 16px';
+  toast.style.marginBottom = '8px';
+  toast.style.borderRadius = '4px';
+  toast.style.backgroundColor = type === 'error' ? '#f44336' : type === 'success' ? '#4caf50' : '#2196f3';
+  toast.style.color = 'white';
+  toast.style.fontSize = '14px';
+  toast.style.boxShadow = '0 2px 8px rgba(0,0,0,0.2)';
+
+  const text = document.createElement('div');
+  text.textContent = message;
+  toast.appendChild(text);
+
+  let removed = false;
+  function dismiss() {
+    if (removed) return;
+    removed = true;
+    toast.style.opacity = '0';
+    toast.style.transition = 'opacity 0.3s ease';
+    setTimeout(() => toast.remove(), 300);
+  }
+
+  container.appendChild(toast);
+  if (timeout > 0) {
+    setTimeout(dismiss, timeout);
+  }
+  return { dismiss };
+}
+
 async function updateWalletBalance() {
-  console.log('fuckk')
   const currentUser = JSON.parse(localStorage.getItem("userData"))
   if(!currentUser) return
 
@@ -319,21 +364,35 @@ async function updateWalletBalance() {
         }
       });
 
+    if (!response.ok) {
+      if (response.status === 401) {
+        console.warn('Wallet balance: session expired');
+        return;
+      }
+      console.error('Error fetching wallet balance:', response.status);
+      return;
+    }
+
     const balance = await response.json();
+    console.log('Wallet balance updated');
+    
+    if (!balance || typeof balance.balance !== 'number') {
+      console.warn('Invalid balance data received');
+      return;
+    }
+
     const balanceEl = document.getElementById("walletBalance")
     if (!balanceEl) return
     balanceEl.textContent = `₦${balance.balance}`
     
   }catch(error){
-    // const newError = await error.json();
-    // console.log(newError);
-
+    console.error('Error updating wallet balance:', error);
   }
-
 }
 
 async function updateCartBadge() {
   const currentUser = JSON.parse(localStorage.getItem("userData"))
+  if (!currentUser) return
 
   try{
     const response = await fetch('https://upstartpy.onrender.com/cart/cart-items/',
@@ -346,11 +405,24 @@ async function updateCartBadge() {
       }
     )
 
+    if (!response.ok) {
+      if (response.status === 401) {
+        console.warn('Cart badge: session expired');
+        return;
+      }
+      console.error('Error fetching cart items:', response.status);
+      return;
+    }
+
     const cart = await response.json();
+    console.log('Cart badge updated:', cart?.length || 0);
+    
     const badge = document.getElementById("cartBadge");
-    badge.textContent = cart.length;
+    if (badge) {
+      badge.textContent = cart?.length || 0;
+    }
   }catch(error){
-    console.log(error);
+    console.error('Error updating cart badge:', error);
   }
 }
 

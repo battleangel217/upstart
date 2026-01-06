@@ -10,27 +10,30 @@ document.addEventListener("DOMContentLoaded", async() => {
     );
 
     if(!response.ok){
-      alert("Can't connect to server");
+      console.error('Error loading universities:', response.status);
+      select.innerHTML = '<option value="" disabled>Error loading universities - try again</option>';
+    } else {
+      const res = await response.json();
+
+      if (!res || res.length === 0) {
+        console.warn('No universities returned');
+        select.innerHTML = '<option value="" disabled>No universities available</option>';
+      } else {
+        console.log('Universities loaded:', res.length);
+        res.forEach((item) => {
+          const option = document.createElement('option');
+          option.value = item.name;
+          option.textContent = item.name;
+          select.appendChild(option);
+        })
+      }
     }
 
-    const res = await response.json();
-
-    res.forEach((item) => {
-      const option = document.createElement('option');
-      option.value = item.name;
-      option.textContent = item.name;
-      select.appendChild(option);
-
-    })
-
-
   }catch(error){
-     select.innerHTML = '<option value="" disabled>Error loading universities</option>';
+    console.error('Error fetching universities:', error);
+    select.innerHTML = '<option value="" disabled>Error loading universities</option>';
   }
   
-
-  
-
 })
 
 
@@ -311,43 +314,50 @@ document.getElementById("signupForm").addEventListener("submit", async (e) => {
       // Hide loading modal on error
       hideLoadingModal();
       
-      const error = await response.json();
-      if(response.status === 400){
-        if(error.email){
-          showToast(error.email[0], "error");
+      let errorMessage = "Signup failed. Please try again.";
+      try {
+        const error = await response.json();
+        console.error('Signup error:', response.status, error);
+        
+        if(response.status === 400){
+          if(error.email && Array.isArray(error.email)){
+            errorMessage = error.email[0];
+          } else if(error.username && Array.isArray(error.username)){
+            errorMessage = error.username[0];
+          } else if(error.detail) {
+            errorMessage = error.detail;
+          }
         }
-        if(error.username){
-          showToast(error.username[0], "error");
+        else if (response.status === 500) {
+          errorMessage = "Server error. Please try again later.";
         }
+      } catch(parseError) {
+        console.error('Failed to parse signup error:', parseError);
       }
-      else if (response.status === 500) {
-        showToast("Internal server error", "error");
-      }
-      console.log(error)
+      
+      showToast(errorMessage, "error");
       return;
     }
 
+    console.log('Signup successful');
+    
+    // Show success message and redirect
+    const toastTimeout = 1400;
+    showToast("Account created successfully! Redirecting to login...", "success", { timeout: toastTimeout });
+
+    // Redirect after the toast has dismissed
+    setTimeout(() => {
+      window.location.href = "login.html"
+    }, 2000);
     
   }catch(error){
     // Hide loading modal on error
     hideLoadingModal();
     
-    console.log(error);
+    console.error('Signup exception:', error);
+    showToast("Network error — please check your connection and try again", "error");
     return;
   }
-
-  // return;
-  // Show success message
-  // Show success as a toast (and keep the success-message div as a fallback)
-  const toastTimeout = 1400;
-  showToast("Account created successfully! Redirecting to login...", "success", { timeout: toastTimeout });
-  // document.getElementById("signupSuccess").textContent = "Account created successfully! Redirecting to login..."
-  // document.getElementById("signupSuccess").classList.add("show")
-
-  // Redirect after the toast has dismissed
-  setTimeout(() => {
-    window.location.href = "login.html"
-  }, 2000);
 })
 
 // Helper function to hide loading modal with exit animation

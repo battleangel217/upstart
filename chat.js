@@ -2,6 +2,52 @@ let currentConversationId = null
 let statusTransitionTimer = null
 let currentVendorId = null
 
+// Toast notification utility
+function showToast(message, type = 'info', options = {}) {
+  const container = document.getElementById('toast-container') || (() => {
+    const el = document.createElement('div');
+    el.id = 'toast-container';
+    el.style.position = 'fixed';
+    el.style.top = '20px';
+    el.style.right = '20px';
+    el.style.zIndex = '9999';
+    document.body.appendChild(el);
+    return el;
+  })();
+
+  const timeout = options.timeout ?? 3500;
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.setAttribute('role', 'status');
+  toast.setAttribute('aria-live', 'polite');
+  toast.style.padding = '12px 16px';
+  toast.style.marginBottom = '8px';
+  toast.style.borderRadius = '4px';
+  toast.style.backgroundColor = type === 'error' ? '#f44336' : type === 'success' ? '#4caf50' : '#2196f3';
+  toast.style.color = 'white';
+  toast.style.fontSize = '14px';
+  toast.style.boxShadow = '0 2px 8px rgba(0,0,0,0.2)';
+
+  const text = document.createElement('div');
+  text.textContent = message;
+  toast.appendChild(text);
+
+  let removed = false;
+  function dismiss() {
+    if (removed) return;
+    removed = true;
+    toast.style.opacity = '0';
+    toast.style.transition = 'opacity 0.3s ease';
+    setTimeout(() => toast.remove(), 300);
+  }
+
+  container.appendChild(toast);
+  if (timeout > 0) {
+    setTimeout(dismiss, timeout);
+  }
+  return { dismiss };
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   const currentUser = JSON.parse(localStorage.getItem("userData"))
   if(!currentUser){
@@ -9,62 +55,72 @@ document.addEventListener("DOMContentLoaded", () => {
     return
   }
 
-  self.ws = new WebSocket(`wss://upstartpy.onrender.com/ws/chat?token=${currentUser.access}`)
-  ws.onopen = function() {
-    console.log('🔌 Websocket connected');
-    hideLoadingModal();
-  };
-  
-  ws.onmessage = function(e) {
-    const data = JSON.parse(e.data);
+  try {
+    self.ws = new WebSocket(`wss://upstartpy.onrender.com/ws/chat?token=${currentUser.access}`)
     
-    if (data.type === 'conversation_list') {
-        console.log('💬 Conversations:', data.conversations);
-        loadConversations(data.conversations);
-    }else if (data.type === "my_messages"){
-      console.log(data.messages)
-      loadMessages(data.messages)
-    }else if (data.type === "new_message"){
-      console.log(data)
-      const isSent = data.sender === currentUser.user.id
-      addMessage(isSent, data.message, data.timestamp, data.conversation_id)
-    }else if (data.type === "mark_chat"){
-      const isSent = data.sender === currentUser.user.id
-      markAsRead(data.conversation_id, isSent)
-    }
-  };
+    ws.onopen = function() {
+      console.log('✅ WebSocket connected successfully');
+      hideLoadingModal();
+    };
+    
+    ws.onmessage = function(e) {
+      try {
+        const data = JSON.parse(e.data);
+        
+        if (data.type === 'conversation_list') {
+            console.log('💬 Conversations loaded:', data.conversations?.length || 0);
+            loadConversations(data.conversations);
+        }else if (data.type === "my_messages"){
+          console.log('📨 Messages loaded:', data.messages?.length || 0);
+          loadMessages(data.messages)
+        }else if (data.type === "new_message"){
+          console.log('📬 New message received');
+          const isSent = data.sender === currentUser.user.id
+          addMessage(isSent, data.message, data.timestamp, data.conversation_id)
+        }else if (data.type === "mark_chat"){
+          const isSent = data.sender === currentUser.user.id
+          markAsRead(data.conversation_id, isSent)
+        }else {
+          console.warn('Unknown message type:', data.type);
+        }
+      } catch(parseError) {
+        console.error('Error parsing WebSocket message:', parseError, e.data);
+      }
+    };
 
-  ws.onclose = function(e) {
-    console.log('🔌 WebSocket closed:', e.code);
-  };
-    
-  ws.onerror = function(error) {
-    console.error('❌ WebSocket error:', error);
-    hideLoadingModal()
-  };
+    ws.onclose = function(e) {
+      console.warn('⚠️ WebSocket closed with code:', e.code, 'reason:', e.reason);
+      if (e.code !== 1000) {
+        showToast('Connection lost. Please refresh the page.', 'error');
+      }
+    };
+      
+    ws.onerror = function(error) {
+      console.error('❌ WebSocket error:', error);
+      showToast('Failed to connect to chat. Check your connection.', 'error');
+      hideLoadingModal();
+    };
+  } catch(error) {
+    console.error('Error initializing WebSocket:', error);
+    showToast('Failed to initialize chat. Please try again.', 'error');
+    hideLoadingModal();
+  }
 
   // Reset scroll positions to default on page load.
-  // This ensures any preserved/previous scroll positions are cleared
-  // and the UI starts at the top for both conversations and messages.
   try {
-    // Small timeout to ensure elements are available and styles applied
     setTimeout(() => {
       const messagesList = document.getElementById('messagesList')
       const conversationsList = document.getElementById('conversationsList')
       if (messagesList) {
         messagesList.scrollTop = 0
-        // remove any inline height if present so CSS can control it
         if (messagesList.style && messagesList.style.height) messagesList.style.height = ''
       }
       if (conversationsList) conversationsList.scrollTop = 0
-      // also reset the page scroll
       window.scrollTo(0, 0)
     }, 50)
   } catch (e) {
     console.warn('Could not reset scroll positions on load', e)
   }
-
-
 })
 
 

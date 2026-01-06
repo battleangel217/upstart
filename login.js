@@ -128,36 +128,51 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
       // Hide loading modal on error
       hideLoadingModal();
       
-      if (response.status === 401) {
-        // invalid credentials
-        showToast("Invalid credentials", "error");
-      } else {
-        showToast("Login failed — please try again", "error");
+      let errorMessage = "Login failed — please try again";
+      try {
+        const error = await response.json();
+        console.error('Login error:', response.status, error);
+        if (response.status === 401) {
+          errorMessage = "Invalid email or password";
+        } else if (error.detail) {
+          errorMessage = error.detail;
+        }
+      } catch(e) {
+        console.error('Failed to parse error response:', e);
       }
+      
+      showToast(errorMessage, "error");
       return;
     }
 
-
     const data = await response.json();
-    // optional: store token / user info here if you want
-    if (data) {
-      localStorage.setItem('userData', JSON.stringify(data));
+    console.log('Login successful');
+    
+    // Validate response data
+    if (!data || !data.access) {
+      hideLoadingModal();
+      console.error('Invalid login response:', data);
+      showToast("Login response invalid. Please try again.", "error");
+      return;
     }
+
+    // Store token / user info
+    localStorage.setItem('userData', JSON.stringify(data));
 
     // Success
     showToast("Login successful! Redirecting...", "success", { timeout: 2000 });
-    // document.getElementById("loginSuccess").textContent = "Login successful! Redirecting...";
-    // document.getElementById("loginSuccess").classList.add("show");
-
-
-    window.location.href = "index.html";
+    
+    setTimeout(() => {
+      window.location.href = "index.html";
+    }, 2000);
+    
     return;
   } catch (err) {
     // Hide loading modal on error
     hideLoadingModal();
     
-    console.error(err);
-    showToast("Network error — please try again", "error");
+    console.error('Login exception:', err);
+    showToast("Network error — please check your connection and try again", "error");
     return;
   }
 

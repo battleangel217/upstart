@@ -1,3 +1,49 @@
+// Toast notification utility
+function showToast(message, type = 'info', options = {}) {
+  const container = document.getElementById('toast-container') || (() => {
+    const el = document.createElement('div');
+    el.id = 'toast-container';
+    el.style.position = 'fixed';
+    el.style.top = '20px';
+    el.style.right = '20px';
+    el.style.zIndex = '9999';
+    document.body.appendChild(el);
+    return el;
+  })();
+
+  const timeout = options.timeout ?? 3500;
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.setAttribute('role', 'status');
+  toast.setAttribute('aria-live', 'polite');
+  toast.style.padding = '12px 16px';
+  toast.style.marginBottom = '8px';
+  toast.style.borderRadius = '4px';
+  toast.style.backgroundColor = type === 'error' ? '#f44336' : type === 'success' ? '#4caf50' : '#2196f3';
+  toast.style.color = 'white';
+  toast.style.fontSize = '14px';
+  toast.style.boxShadow = '0 2px 8px rgba(0,0,0,0.2)';
+
+  const text = document.createElement('div');
+  text.textContent = message;
+  toast.appendChild(text);
+
+  let removed = false;
+  function dismiss() {
+    if (removed) return;
+    removed = true;
+    toast.style.opacity = '0';
+    toast.style.transition = 'opacity 0.3s ease';
+    setTimeout(() => toast.remove(), 300);
+  }
+
+  container.appendChild(toast);
+  if (timeout > 0) {
+    setTimeout(dismiss, timeout);
+  }
+  return { dismiss };
+}
+
 async function loadLeaderboard() {
   try{
     const response = await fetch('https://upstartpy.onrender.com/customers/top-vendors/',
@@ -6,13 +52,23 @@ async function loadLeaderboard() {
         headers: {"Content-Type":"application/json"}
       })
 
-    const vendors = await response.json();
-
-    // Sort vendors by sales
-    loadVendorsList(vendors)
+    if (!response.ok) {
+      console.error('Error fetching top vendors:', response.status);
+      showToast('Failed to load vendors. Please try again.', 'error');
+    } else {
+      const vendors = await response.json();
+      if (vendors && vendors.length > 0) {
+        console.log('Vendors loaded successfully:', vendors.length, 'items');
+        loadVendorsList(vendors);
+      } else {
+        console.warn('No vendors returned from server');
+        document.getElementById("vendorsList").innerHTML = '<p style="text-align: center; color: var(--text-secondary);">No vendors available</p>';
+      }
+    }
 
   }catch(error){
-
+    console.error('Error loading vendors:', error);
+    showToast('Failed to load vendors. Check your connection.', 'error');
   }
 
   try{
@@ -22,12 +78,22 @@ async function loadLeaderboard() {
         headers: {"Content-Type":"application/json"}
       })
 
-    const customers = await response.json();
-
-    // Sort vendors by sales
-    loadCustomersList(customers)
+    if (!response.ok) {
+      console.error('Error fetching top customers:', response.status);
+      showToast('Failed to load customers. Please try again.', 'error');
+    } else {
+      const customers = await response.json();
+      if (customers && customers.length > 0) {
+        console.log('Customers loaded successfully:', customers.length, 'items');
+        loadCustomersList(customers);
+      } else {
+        console.warn('No customers returned from server');
+        document.getElementById("customersList").innerHTML = '<p style="text-align: center; color: var(--text-secondary);">No customers available</p>';
+      }
+    }
   }catch(error){
-
+    console.error('Error loading customers:', error);
+    showToast('Failed to load customers. Check your connection.', 'error');
   }
 
   try{
@@ -39,20 +105,29 @@ async function loadLeaderboard() {
         }
       });
     
+    if (!response.ok) {
+      console.error('Error fetching top products:', response.status);
+      showToast('Failed to load trending products. Please try again.', 'error');
+      hideLoadingModal();
+      return;
+    }
+
     const products = await response.json();
-    loadTrendingProducts(products);
+    if (products && products.length > 0) {
+      console.log('Trending products loaded successfully:', products.length, 'items');
+      loadTrendingProducts(products);
+    } else {
+      console.warn('No products returned from server');
+      document.getElementById("trendingProducts").innerHTML = '<p style="text-align: center; color: var(--text-secondary);">No trending products available</p>';
+    }
+    
     hideLoadingModal();
 
   }catch(error){
+    console.error('Error loading trending products:', error);
+    showToast('Failed to load trending products. Check your connection.', 'error');
     hideLoadingModal();
   }
-
-  // Sort products by views
-  // const sortedProducts = [...products].sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0))
-  // loadTrendingProducts(sortedProducts.slice(0, 12))
-
-  // Load top reviews (simulated)
-  // loadTopReviews()
 }
 
 function loadVendorsList(vendors) {
@@ -170,7 +245,9 @@ async function addLeaderboardProductToCart(productId) {
   const userData = JSON.parse(localStorage.getItem("userData"));
 
   if(!userData) {
+    showToast('Please log in to add items to cart', 'error');
     window.location.href = "login.html";
+    return;
   }
 
   try{
@@ -185,18 +262,25 @@ async function addLeaderboardProductToCart(productId) {
 
     if (!response.ok){
       if(response.status === 401){
+        showToast('Session expired. Please log in again.', 'error');
         window.location.href = "login.html";
+        return;
       }
+      const error = await response.json();
+      console.error('Error adding to cart:', response.status, error);
+      showToast(error.detail || 'Failed to add item to cart', 'error');
       return;
     }
-    alert(`Added to cart!`);
+
+    showToast('Item added to cart!', 'success');
     const badge = document.getElementById("cartBadge")
     if (badge) {
-      badge.textContent ++;
+      badge.textContent++;
     }
     document.getElementById("productModal").classList.remove("active")
   }catch(error){
-    alert("Can't connect to server")
+    console.error('Error adding to cart:', error);
+    showToast('Failed to add item to cart. Check your connection.', 'error');
   }
 }
 

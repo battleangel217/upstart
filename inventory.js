@@ -4,6 +4,52 @@ let _createdPreviewURLs = []
 // aggregated selected files (supports continuous picking / multiple drops)
 let _selectedFiles = []
 
+// Toast notification utility
+function showToast(message, type = 'info', options = {}) {
+  const container = document.getElementById('toast-container') || (() => {
+    const el = document.createElement('div');
+    el.id = 'toast-container';
+    el.style.position = 'fixed';
+    el.style.top = '20px';
+    el.style.right = '20px';
+    el.style.zIndex = '9999';
+    document.body.appendChild(el);
+    return el;
+  })();
+
+  const timeout = options.timeout ?? 3500;
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.setAttribute('role', 'status');
+  toast.setAttribute('aria-live', 'polite');
+  toast.style.padding = '12px 16px';
+  toast.style.marginBottom = '8px';
+  toast.style.borderRadius = '4px';
+  toast.style.backgroundColor = type === 'error' ? '#f44336' : type === 'success' ? '#4caf50' : '#2196f3';
+  toast.style.color = 'white';
+  toast.style.fontSize = '14px';
+  toast.style.boxShadow = '0 2px 8px rgba(0,0,0,0.2)';
+
+  const text = document.createElement('div');
+  text.textContent = message;
+  toast.appendChild(text);
+
+  let removed = false;
+  function dismiss() {
+    if (removed) return;
+    removed = true;
+    toast.style.opacity = '0';
+    toast.style.transition = 'opacity 0.3s ease';
+    setTimeout(() => toast.remove(), 300);
+  }
+
+  container.appendChild(toast);
+  if (timeout > 0) {
+    setTimeout(dismiss, timeout);
+  }
+  return { dismiss };
+}
+
 function checkAuth() {
   const currentUser = JSON.parse(localStorage.getItem("userData"))
   if (!currentUser) {
@@ -31,11 +77,20 @@ async function loadInventory() {
           "Authorization":`Bearer ${currentUser.access}`
         }
       })
+
+    if (!response.ok) {
+      console.error('Error loading inventory:', response.status);
+      showToast('Failed to load your products. Please try again.', 'error');
+      hideLoadingModal();
+      return;
+    }
+
     const vendorProducts = await response.json()
+    console.log('Inventory loaded:', vendorProducts?.length || 0, 'products');
 
     const grid = document.getElementById("productsGrid")
 
-    if (vendorProducts.length === 0) {
+    if (!vendorProducts || vendorProducts.length === 0) {
       grid.innerHTML = `
               <div class="empty-inventory" style="grid-column: 1/-1;">
                   <div class="empty-icon">📦</div>
@@ -50,13 +105,12 @@ async function loadInventory() {
       .map(
         (product, index) => `
           <div class="product-card">
-              <img src="${product.image_url[0]}" alt="${product.product_name}" class="product-image">
+              <img src="${product.image_url?.[0] || '/placeholder.svg'}" alt="${product.product_name}" class="product-image" onerror="this.src='/placeholder.svg'">
               <div class="product-card-body">
                   <div class="product-card-name">${product.product_name}</div>
                   <div class="product-card-price">$${product.price}</div>
                   <div class="product-card-info">Qty: ${product.quantity}</div>
                   <div class="product-card-info">Views: ${product.view_count || 0}</div>
-                  <!-- video badge is now clickable to open video viewer -->
                   ${product.videoUrl ? `<div class="product-card-info" style="cursor: pointer;" onclick="initVideoViewer(${JSON.stringify([product]).replace(/"/g, "&quot;")}, 0)">🎥 View Video</div>` : ""}
                   <div class="product-card-actions">
                       <button class="edit-btn" onclick="openEditModal(${product.id})">Edit</button>
@@ -69,9 +123,10 @@ async function loadInventory() {
       .join("")
     hideLoadingModal()
   }catch(error){
-    hideLoadingModal()
+    console.error('Error loading inventory:', error);
+    showToast('Failed to load inventory. Check your connection.', 'error');
+    hideLoadingModal();
   }
-
 }
 
 // Add Product Modal
@@ -338,53 +393,70 @@ document.getElementById("addProductForm").addEventListener("submit", async (e) =
       body: fd,
     })
 
-    if (response.ok) {
-      hideLoadingModal();
-      alert('Product added successfully!')
-      document.getElementById('addProductForm').reset()
-      document.getElementById('addProductModal').classList.remove('active')
-      clearImagePreviews()
-      clearSelectedFiles()
-      loadInventory()
-    } else {
+    if (!response.ok) {
       hideLoadingModal();
       const err = await response.json().catch(() => ({}))
-      console.error('Server error adding product:', err)
-      alert(err.detail || 'Failed to add product (server error)')
+      console.error('Server error adding product:', response.status, err)
+      showToast(err.detail || 'Failed to add product. Please try again.', 'error');
+      return;
     }
+
+    hideLoadingModal();
+    showToast('Product added successfully!', 'success');
+    console.log('Product added successfully');
+    document.getElementById('addProductForm').reset()
+    document.getElementById('addProductModal').classList.remove('active')
+    clearImagePreviews()
+    clearSelectedFiles()
+    loadInventory()
   } catch (error) {
     hideLoadingModal();
-    console.error('Network error adding product, saving locally:', error)
-
+    console.error('Error adding product:', error)
+    showToast('Failed to add product. Check your connection.', 'error');
   }
 })
 
 // Edit Product Modal
 async function openEditModal(productId) {
-  currentEditProductId = productId
-  const response = await fetch(`https://upstartpy.onrender.com/products/${productId}`,
-    {
-      method: "GET",
-      headers: { "Content-Type": "application/json" }
+  try {
+    currentEditProductId = productId
+    const response = await fetch(`https://upstartpy.onrender.com/products/${productId}`,
+      {
+        method: "GET",
+        headers: { "Content-Type": "application/json" }
+      }
+    )
+
+    if (!response.ok) {
+      console.error('Error fetching product:', response.status);
+      showToast('Failed to load product details.', 'error');
+      return;
     }
-  )
 
-  const product = await response.json();
+    const product = await response.json();
 
-  if (!product) return
+    if (!product) {
+      console.error('No product data received');
+      showToast('Product not found.', 'error');
+      return;
+    }
 
-  document.getElementById("editProductName").value = product.product_name
-  document.getElementById("editProductDescription").value = product.description
-  document.getElementById("editProductPrice").value = product.price
-  document.getElementById("editProductQuantity").value = product.quantity
-  document.getElementById("editProductCategory").value = product.category
-  document.getElementById("editProductLocation").value = product.institute
-  document.getElementById("editViewCount").textContent = product.viewCount || 0
+    document.getElementById("editProductName").value = product.product_name
+    document.getElementById("editProductDescription").value = product.description
+    document.getElementById("editProductPrice").value = product.price
+    document.getElementById("editProductQuantity").value = product.quantity
+    document.getElementById("editProductCategory").value = product.category
+    document.getElementById("editProductLocation").value = product.institute
+    document.getElementById("editViewCount").textContent = product.viewCount || 0
 
-  document.getElementById("editProductModal").classList.add("active")
-  const modalContent = document.querySelector(".modal-body");
-  if (modalContent) {
-    modalContent.scrollTop = 0;
+    document.getElementById("editProductModal").classList.add("active")
+    const modalContent = document.querySelector(".modal-body");
+    if (modalContent) {
+      modalContent.scrollTop = 0;
+    }
+  } catch(error) {
+    console.error('Error opening edit modal:', error);
+    showToast('Failed to load product. Check your connection.', 'error');
   }
 }
 

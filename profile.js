@@ -1,3 +1,49 @@
+// Toast notification utility
+function showToast(message, type = 'info', options = {}) {
+  const container = document.getElementById('toast-container') || (() => {
+    const el = document.createElement('div');
+    el.id = 'toast-container';
+    el.style.position = 'fixed';
+    el.style.top = '20px';
+    el.style.right = '20px';
+    el.style.zIndex = '9999';
+    document.body.appendChild(el);
+    return el;
+  })();
+
+  const timeout = options.timeout ?? 3500;
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.setAttribute('role', 'status');
+  toast.setAttribute('aria-live', 'polite');
+  toast.style.padding = '12px 16px';
+  toast.style.marginBottom = '8px';
+  toast.style.borderRadius = '4px';
+  toast.style.backgroundColor = type === 'error' ? '#f44336' : type === 'success' ? '#4caf50' : '#2196f3';
+  toast.style.color = 'white';
+  toast.style.fontSize = '14px';
+  toast.style.boxShadow = '0 2px 8px rgba(0,0,0,0.2)';
+
+  const text = document.createElement('div');
+  text.textContent = message;
+  toast.appendChild(text);
+
+  let removed = false;
+  function dismiss() {
+    if (removed) return;
+    removed = true;
+    toast.style.opacity = '0';
+    toast.style.transition = 'opacity 0.3s ease';
+    setTimeout(() => toast.remove(), 300);
+  }
+
+  container.appendChild(toast);
+  if (timeout > 0) {
+    setTimeout(dismiss, timeout);
+  }
+  return { dismiss };
+}
+
 let isEditing = false
 
 async function loadUserProfile() {
@@ -31,29 +77,40 @@ async function loadUserProfile() {
     );
 
     if(!response.ok){
-      alert("Can't connect to server");
+      console.error('Error fetching universities:', response.status);
+      showToast("Failed to load universities. You can still edit manually.", 'error');
+      select.innerHTML = '<option value="" disabled>Error loading universities - edit manually</option>';
+      hideLoadingModal();
+      return;
     }
 
     const res = await response.json();
+    
+    if (!res || res.length === 0) {
+      console.warn('No universities returned');
+      select.innerHTML = '<option value="" disabled>No universities available</option>';
+      hideLoadingModal();
+      return;
+    }
 
+    console.log('Universities loaded:', res.length, 'items');
     res.forEach((item) => {
       const option = document.createElement('option');
       option.value = item.name;
       option.textContent = item.name;
       select.appendChild(option);
-
     })
 
-    
-
-
   }catch(error){
-     select.innerHTML = '<option value="" disabled>Error loading universities</option>';
+    console.error('Error loading universities:', error);
+    select.innerHTML = '<option value="" disabled>Error loading universities</option>';
+    showToast('Failed to load universities. Check your connection.', 'error');
+  }finally{
+    select.disabled = true;
+    bio.disabled = true;
+    document.getElementById("university").value = user.institute;
+    hideLoadingModal();
   }
-  select.disabled = true;
-  bio.disabled = true;
-  document.getElementById("university").value = user.institute
-  hideLoadingModal()
 }
 
 // Edit profile
@@ -88,7 +145,8 @@ document.getElementById("saveBtn").addEventListener("click", async () => {
 
   const bio = document.getElementById("bio").value;
   const institute = document.getElementById("university").value;
-  console.log(JSON.stringify({bio, institute}))
+  console.log('Saving profile with:', JSON.stringify({bio, institute}))
+  
   try{
     const response = await fetch('https://upstartpy.onrender.com/auth/users/me/', 
       {
@@ -100,34 +158,39 @@ document.getElementById("saveBtn").addEventListener("click", async () => {
         body: JSON.stringify({bio, institute})
       })
 
-    if (response.ok){
+    if (!response.ok){
+      const error = await response.json();
+      console.error('Error updating profile:', response.status, error);
       hideLoadingModal();
-      const data = await response.json()
-      alert("Profile updated successfully!")
-      currentUser.user.bio = data.bio
-      currentUser.user.institute = data.institute
-
-      localStorage.setItem("userData", JSON.stringify(currentUser));
-
-      isEditing = false
-      document.querySelectorAll(".form-input").forEach((input) => {
-        input.setAttribute("readonly", "")
-        input.setAttribute("disabled", "")
-      })
-      document.getElementById("editBtn").style.display = "block"
-      document.getElementById("saveBtn").style.display = "none"
-      document.getElementById("cancelBtn").style.display = "none"
-      loadUserProfile()
-    } else {
-      hideLoadingModal();
+      showToast(error.detail || 'Failed to update profile', 'error');
+      return;
     }
 
+    const data = await response.json()
+    hideLoadingModal();
+    showToast("Profile updated successfully!", "success");
+    console.log('Profile updated successfully');
+    
+    currentUser.user.bio = data.bio
+    currentUser.user.institute = data.institute
+
+    localStorage.setItem("userData", JSON.stringify(currentUser));
+
+    isEditing = false
+    document.querySelectorAll(".form-input").forEach((input) => {
+      input.setAttribute("readonly", "")
+      input.setAttribute("disabled", "")
+    })
+    document.getElementById("editBtn").style.display = "block"
+    document.getElementById("saveBtn").style.display = "none"
+    document.getElementById("cancelBtn").style.display = "none"
+    loadUserProfile()
 
   }catch(error){
+    console.error('Error saving profile:', error);
     hideLoadingModal();
+    showToast('Failed to update profile. Check your connection.', 'error');
   }
-
-
 })
 
 // Cancel edit
@@ -157,6 +220,23 @@ document.getElementById("photoInput").addEventListener("change", async (e) => {
 
   const file = e.target.files[0]
   
+  if (!file) {
+    console.warn('No file selected');
+    return;
+  }
+
+  // Validate file type
+  if (!file.type.startsWith('image/')) {
+    showToast('Please select a valid image file.', 'error');
+    return;
+  }
+
+  // Validate file size (max 5MB)
+  if (file.size > 5 * 1024 * 1024) {
+    showToast('Image size must be less than 5MB.', 'error');
+    return;
+  }
+  
   const formData = new FormData();
   formData.append('profile_picture', file);
 
@@ -170,19 +250,28 @@ document.getElementById("photoInput").addEventListener("change", async (e) => {
         body: formData
       })
 
-    if (response.ok){
-      const data = await response.json()
-      alert("Profile picture updated successfully!")
-
-      document.getElementById("profileImg").src = data.profile_url
-
-      currentUser.user.profile_url = data.profile_url
-      localStorage.setItem("userData", JSON.stringify(currentUser))
+    if (!response.ok){
+      const error = await response.json();
+      console.error('Error updating profile picture:', response.status, error);
+      showToast(error.detail || 'Failed to update profile picture', 'error');
+      return;
     }
 
+    const data = await response.json()
+    showToast("Profile picture updated successfully!", "success");
+    console.log('Profile picture updated');
+
+    document.getElementById("profileImg").src = data.profile_url
+
+    currentUser.user.profile_url = data.profile_url
+    localStorage.setItem("userData", JSON.stringify(currentUser))
 
   }catch(error){
-
+    console.error('Error uploading profile picture:', error);
+    showToast('Failed to upload profile picture. Check your connection.', 'error');
+  }finally{
+    // Reset file input
+    e.target.value = '';
   }
 })
 

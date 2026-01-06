@@ -1,3 +1,49 @@
+// Toast notification utility
+function showToast(message, type = 'info', options = {}) {
+  const container = document.getElementById('toast-container') || (() => {
+    const el = document.createElement('div');
+    el.id = 'toast-container';
+    el.style.position = 'fixed';
+    el.style.top = '20px';
+    el.style.right = '20px';
+    el.style.zIndex = '9999';
+    document.body.appendChild(el);
+    return el;
+  })();
+
+  const timeout = options.timeout ?? 3500;
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.setAttribute('role', 'status');
+  toast.setAttribute('aria-live', 'polite');
+  toast.style.padding = '12px 16px';
+  toast.style.marginBottom = '8px';
+  toast.style.borderRadius = '4px';
+  toast.style.backgroundColor = type === 'error' ? '#f44336' : type === 'success' ? '#4caf50' : '#2196f3';
+  toast.style.color = 'white';
+  toast.style.fontSize = '14px';
+  toast.style.boxShadow = '0 2px 8px rgba(0,0,0,0.2)';
+
+  const text = document.createElement('div');
+  text.textContent = message;
+  toast.appendChild(text);
+
+  let removed = false;
+  function dismiss() {
+    if (removed) return;
+    removed = true;
+    toast.style.opacity = '0';
+    toast.style.transition = 'opacity 0.3s ease';
+    setTimeout(() => toast.remove(), 300);
+  }
+
+  container.appendChild(toast);
+  if (timeout > 0) {
+    setTimeout(dismiss, timeout);
+  }
+  return { dismiss };
+}
+
 async function loadWalletData() {
   // Check if returning from payment
   const pendingReference = sessionStorage.getItem("pendingPaymentReference")
@@ -17,24 +63,41 @@ async function loadWalletData() {
     return
   }
 
-  const response = await fetch('https://upstartpy.onrender.com/wallet/getbalance/',
-    {
-      method: "GET",
-      headers: {
-        "Content-Type":"application/json",
-        "Authorization":`Bearer ${currentUser.access}`
+  try {
+    const response = await fetch('https://upstartpy.onrender.com/wallet/getbalance/',
+      {
+        method: "GET",
+        headers: {
+          "Content-Type":"application/json",
+          "Authorization":`Bearer ${currentUser.access}`
+        }
+      })
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        showToast('Session expired. Redirecting to login...', 'error');
+        window.location.href = "login.html";
+        return;
       }
-    })
+      console.error('Error fetching wallet balance:', response.status);
+      showToast('Failed to load wallet data. Please try again.', 'error');
+      return;
+    }
 
     const balance = await response.json();
-    console.log(balance);
+    console.log('Wallet balance loaded:', balance);
 
+    if (balance && typeof balance.balance === 'number') {
+      document.getElementById("balanceAmount").textContent = `$${(balance.balance).toFixed(2)}`
+    } else {
+      console.warn('Invalid balance data received');
+    }
 
-  if (balance) {
-    document.getElementById("balanceAmount").textContent = `$${(balance.balance).toFixed(2)}`
+    loadTransactionHistory()
+  } catch(error) {
+    console.error('Error loading wallet data:', error);
+    showToast('Failed to load wallet. Check your connection.', 'error');
   }
-
-  loadTransactionHistory()
 }
 
 async function verifyPayment(reference, amount) {
@@ -53,6 +116,15 @@ async function verifyPayment(reference, amount) {
       }
     })
 
+    if (!response.ok) {
+      console.error('Error verifying payment:', response.status);
+      showPaymentState("failed", {
+        reference: reference,
+        message: "Payment verification failed. Please contact support."
+      })
+      return;
+    }
+
     const result = await response.json()
     console.log("Verification result:", result)
 
@@ -62,6 +134,7 @@ async function verifyPayment(reference, amount) {
         amount: `$${amount.toFixed(2)}`,
         reference: reference
       })
+      showToast(`Payment of $${amount.toFixed(2)} successful!`, 'success');
       
       // Reload wallet data after a short delay
       setTimeout(() => {
@@ -73,6 +146,7 @@ async function verifyPayment(reference, amount) {
         reference: reference,
         message: result.message || "Payment verification failed. Please try again."
       })
+      showToast(result.message || "Payment verification failed.", 'error');
     }
   } catch (error) {
     console.error("Verification error:", error)
@@ -80,6 +154,7 @@ async function verifyPayment(reference, amount) {
       reference: reference,
       message: "Unable to verify payment. Please contact support."
     })
+    showToast("Failed to verify payment. Check your connection.", 'error');
   }
 }
 
@@ -183,14 +258,20 @@ function retryPayment() {
 document.getElementById("submitAddMoney").addEventListener("click", async () => {
   const currentUser = JSON.parse(localStorage.getItem("userData"))
   if (!currentUser) {
+    showToast('Please log in to add money', 'error');
     window.location.href = "login.html"
     return
   }
   
   const amount = Number.parseFloat(document.getElementById("addMoneyAmount").value)
   if (!amount || amount <= 0) {
-    alert("Please enter a valid amount")
+    showToast("Please enter a valid amount", 'error');
     document.getElementById("addMoneyAmount").value = null
+    return
+  }
+
+  if (amount > 1000000) {
+    showToast("Amount exceeds maximum limit of $1,000,000", 'error');
     return
   }
 
@@ -213,17 +294,26 @@ document.getElementById("submitAddMoney").addEventListener("click", async () => 
     })
 
     if (!response.ok) {
-      throw new Error(`Payment initialization failed: ${response.statusText}`)
+      const error = await response.json();
+      console.error('Payment initialization failed:', response.status, error);
+      showPaymentState("failed", {
+        reference: "N/A",
+        message: error.detail || "Payment initialization failed. Please try again."
+      })
+      showToast(error.detail || 'Failed to initialize payment', 'error');
+      return;
     }
 
     const details = await response.json()
     console.log("Payment details:", details)
 
     if (!details || !details.details || !details.details.data || !details.details.data.authorization_url) {
+      console.error('Invalid payment response:', details);
       showPaymentState("failed", {
         reference: "N/A",
         message: "Failed to initialize payment. Please try again."
       })
+      showToast("Failed to initialize payment. Please try again.", 'error');
       return
     }
 
@@ -243,6 +333,7 @@ document.getElementById("submitAddMoney").addEventListener("click", async () => 
       reference: "N/A",
       message: "An error occurred. Please try again."
     })
+    showToast("Failed to process payment. Check your connection.", 'error');
   }
 })
 

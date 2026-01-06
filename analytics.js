@@ -1,3 +1,49 @@
+// Toast notification utility
+function showToast(message, type = 'info', options = {}) {
+  const container = document.getElementById('toast-container') || (() => {
+    const el = document.createElement('div');
+    el.id = 'toast-container';
+    el.style.position = 'fixed';
+    el.style.top = '20px';
+    el.style.right = '20px';
+    el.style.zIndex = '9999';
+    document.body.appendChild(el);
+    return el;
+  })();
+
+  const timeout = options.timeout ?? 3500;
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.setAttribute('role', 'status');
+  toast.setAttribute('aria-live', 'polite');
+  toast.style.padding = '12px 16px';
+  toast.style.marginBottom = '8px';
+  toast.style.borderRadius = '4px';
+  toast.style.backgroundColor = type === 'error' ? '#f44336' : type === 'success' ? '#4caf50' : '#2196f3';
+  toast.style.color = 'white';
+  toast.style.fontSize = '14px';
+  toast.style.boxShadow = '0 2px 8px rgba(0,0,0,0.2)';
+
+  const text = document.createElement('div');
+  text.textContent = message;
+  toast.appendChild(text);
+
+  let removed = false;
+  function dismiss() {
+    if (removed) return;
+    removed = true;
+    toast.style.opacity = '0';
+    toast.style.transition = 'opacity 0.3s ease';
+    setTimeout(() => toast.remove(), 300);
+  }
+
+  container.appendChild(toast);
+  if (timeout > 0) {
+    setTimeout(dismiss, timeout);
+  }
+  return { dismiss };
+}
+
 function checkAuth() {
   const currentUser = JSON.parse(localStorage.getItem("userData"))
   if (!currentUser) {
@@ -26,31 +72,39 @@ async function loadAnalytics() {
         }
       });
     
-    const data = await response.json();
+    if (!response.ok) {
+      console.error('Error fetching analytics:', response.status);
+      showToast('Failed to load analytics. Please try again.', 'error');
+      hideLoadingModal();
+      return;
+    }
 
-    document.getElementById("totalSales").textContent = data.total_sales_quantity
-    document.getElementById("totalRevenue").textContent = data.total_revenue
-    document.getElementById("totalViews").textContent = data.total_views
+    const data = await response.json();
+    console.log('Analytics loaded successfully');
+
+    if (!data) {
+      console.warn('No analytics data received');
+      hideLoadingModal();
+      return;
+    }
+
+    document.getElementById("totalSales").textContent = data.total_sales_quantity || 0
+    document.getElementById("totalRevenue").textContent = data.total_revenue || 0
+    document.getElementById("totalViews").textContent = data.total_views || 0
     document.getElementById("avgRating").textContent = (data.rating || 0).toFixed(1)
     document.getElementById("ratingStars").textContent =
       "★".repeat(Math.round(data.rating || 0)) + "☆".repeat(5 - Math.round(data.rating || 0))
-    document.getElementById("productCount").textContent = data.active_products_count
+    document.getElementById("productCount").textContent = data.active_products_count || 0
+
+    // Load top products
+    loadTopProducts()
+    hideLoadingModal();
 
   }catch(error){
-    alert("Can't connect to server")
+    console.error('Error loading analytics:', error);
+    showToast('Failed to load analytics. Check your connection.', 'error');
+    hideLoadingModal();
   }
-
-  
-
-  // Draw charts
-  // drawSalesChart()
-  // drawCategoryChart()
-
-  // // Load top products
-  loadTopProducts()
-
-  // // Load recent orders
-  // loadRecentOrders()
 }
 
 function drawSalesChart() {

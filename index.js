@@ -1,3 +1,63 @@
+// Toast notification utility function
+function showToast(message, type = 'info', options = {}) {
+  const container = document.getElementById('toast-container') || (() => {
+    const el = document.createElement('div');
+    el.id = 'toast-container';
+    el.style.position = 'fixed';
+    el.style.top = '20px';
+    el.style.right = '20px';
+    el.style.zIndex = '9999';
+    document.body.appendChild(el);
+    return el;
+  })();
+
+  const timeout = options.timeout ?? 3500;
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.setAttribute('role', 'status');
+  toast.setAttribute('aria-live', 'polite');
+  toast.style.padding = '12px 16px';
+  toast.style.marginBottom = '8px';
+  toast.style.borderRadius = '4px';
+  toast.style.backgroundColor = type === 'error' ? '#f44336' : type === 'success' ? '#4caf50' : '#2196f3';
+  toast.style.color = 'white';
+  toast.style.fontSize = '14px';
+  toast.style.boxShadow = '0 2px 8px rgba(0,0,0,0.2)';
+
+  const text = document.createElement('div');
+  text.textContent = message;
+  toast.appendChild(text);
+
+  const close = document.createElement('button');
+  close.className = 'close-btn';
+  close.type = 'button';
+  close.textContent = '×';
+  close.style.marginLeft = '12px';
+  close.style.background = 'none';
+  close.style.border = 'none';
+  close.style.color = 'white';
+  close.style.cursor = 'pointer';
+  close.style.fontSize = '20px';
+  close.addEventListener('click', () => dismiss());
+  toast.appendChild(close);
+
+  let removed = false;
+  function dismiss() {
+    if (removed) return;
+    removed = true;
+    toast.style.opacity = '0';
+    toast.style.transition = 'opacity 0.3s ease';
+    setTimeout(() => toast.remove(), 300);
+  }
+
+  container.appendChild(toast);
+
+  if (timeout > 0) {
+    setTimeout(dismiss, timeout);
+  }
+  return { dismiss };
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   const currentUser = JSON.parse(localStorage.getItem("userData"))
   let headers = {"Content-Type":"application/json"}
@@ -16,18 +76,26 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     if (!response.ok){
-      const error = await response.json()
-      console.log(error)
+      const error = await response.json();
+      console.error('Error loading products:', response.status, error);
+      showToast(`Failed to load products: ${error.detail || 'Unknown error'}`, 'error');
+      hideLoadingModal();
+      return;
     }
-    if (response.ok) hideLoadingModal();
 
     const products = await response.json();
-    console.log(products[0].id);
-
+    if (!products || products.length === 0) {
+      console.warn('No products returned from server');
+    } else {
+      console.log('Products loaded successfully:', products.length, 'items');
+    }
+    
     renderProducts(products);
+    hideLoadingModal();
 
   }catch(error){
     console.error('Error loading products (index.js):', error);
+    showToast('Failed to load products. Please check your connection and try again.', 'error');
     hideLoadingModal();
   }
 
@@ -89,145 +157,150 @@ async function openProductModal(productId) {
   if (currentUser) {
     headers["Authorization"] = `Bearer ${currentUser.access}`;
   }
-  const response = await fetch(`https://upstartpy.onrender.com/products/${productId}`,
-    {
-      method: "GET",
-      headers
+  
+  try {
+    const response = await fetch(`https://upstartpy.onrender.com/products/${productId}`,
+      {
+        method: "GET",
+        headers
+      }
+    )
+
+    if (!response.ok) {
+      console.error('Error fetching product details:', response.status);
+      showToast('Failed to load product details. Please try again.', 'error');
+      return;
     }
-  )
 
-  const product = await response.json();
+    const product = await response.json();
+    if (!product) {
+      console.error('No product data received');
+      showToast('Product not found.', 'error');
+      return;
+    }
 
-  if (!product) return
-
-  // const vendor = product.
+    console.log('Product loaded successfully:', product.id);
 
     // Store product ID in modal for button actions
     document.getElementById("productModal").dataset.productId = productId
 
-  // Update modal content
-  document.getElementById("productName").textContent = product.product_name
-  document.getElementById("productPrice").textContent = `$${product.price}`
-  document.getElementById("productDescription").textContent = product.description
-  // document.getElementById("productColor").textContent = product.color
-  document.getElementById("productLocation").textContent = product.institute
-  document.getElementById("productCategory").textContent = product.category
-  document.getElementById("quantityAvailable").textContent = product.quantity
-  document.getElementById("viewCount").textContent = product.view_count
-  // document.getElementById("reviewCount").textContent = `(${product.reviews.length} reviews)`
-  document.getElementById("productRating").textContent =
-    "★".repeat(Math.round(product.rating)) + "☆".repeat(5 - Math.round(product.rating))
+    // Update modal content
+    document.getElementById("productName").textContent = product.product_name
+    document.getElementById("productPrice").textContent = `$${product.price}`
+    document.getElementById("productDescription").textContent = product.description
+    document.getElementById("productLocation").textContent = product.institute
+    document.getElementById("productCategory").textContent = product.category
+    document.getElementById("quantityAvailable").textContent = product.quantity
+    document.getElementById("viewCount").textContent = product.view_count
+    document.getElementById("productRating").textContent =
+      "★".repeat(Math.round(product.rating)) + "☆".repeat(5 - Math.round(product.rating))
 
-  document.getElementById("likesCount").textContent = product.likes || 0
-  document.getElementById("vendorName").textContent = product.vendor_username
-  document.getElementById("vendorEmail").textContent = product.vendor_email
-  document.getElementById("vendorImage").src = product.pfp
-  document.getElementById("vendorRating").textContent =
-    "★".repeat(Math.round(product.vendor_rating)) + "☆".repeat(5 - Math.round(product.vendor_rating))
+    document.getElementById("likesCount").textContent = product.likes || 0
+    document.getElementById("vendorName").textContent = product.vendor_username
+    document.getElementById("vendorEmail").textContent = product.vendor_email
+    document.getElementById("vendorImage").src = product.pfp
+    document.getElementById("vendorRating").textContent =
+      "★".repeat(Math.round(product.vendor_rating)) + "☆".repeat(5 - Math.round(product.vendor_rating))
 
-  // Set max quantity for input
-  // const quantityInput = document.getElementById("cartQuantityInput")
-  // if (quantityInput) {
-  //   quantityInput.max = product.quantity
-  //   quantityInput.value = 1
-  // }
-
-  // Update gallery
-  document.getElementById("galleryMainImage").src = product.image_url[0]
-  const thumbnails = document.getElementById("galleryThumbnails")
-  thumbnails.innerHTML = product.image_url
-    .map(
-      (img, idx) => `
-        <div class="gallery-thumbnail" onclick="event.stopPropagation(); document.getElementById('galleryMainImage').src='${img}'">
-            <img src="${img}" alt="Image ${idx + 1}">
-        </div>
-    `,
-    )
-    .join("")
-
-
-  const commentsList = document.getElementById("commentsList")
-  if (product.reviews && product.reviews.length > 0) {
-    commentsList.innerHTML = product.reviews
+    // Update gallery
+    document.getElementById("galleryMainImage").src = product.image_url[0]
+    const thumbnails = document.getElementById("galleryThumbnails")
+    thumbnails.innerHTML = product.image_url
       .map(
-        (comment) => `
-        <div class="comment-item">
-          <div class="comment-header">
-            <strong>${comment.user}</strong>
-            <span class="comment-rating">${"★".repeat(comment.rating)}${"☆".repeat(5 - comment.rating)}</span>
+        (img, idx) => `
+          <div class="gallery-thumbnail" onclick="event.stopPropagation(); document.getElementById('galleryMainImage').src='${img}'">
+              <img src="${img}" alt="Image ${idx + 1}">
           </div>
-          <p class="comment-text">${comment.text}</p>
-          <span class="comment-time">${comment.timestamp}</span>
-        </div>
       `,
       )
       .join("")
-  } else {
-    commentsList.innerHTML = `<p class="no-comments">No reviews yet. Be the first to review!</p>`
-  }
 
-  document.getElementById("likeBtn").onclick = () => {
-    product.likes = (product.likes || 0) + 1
-    const products = JSON.parse(localStorage.getItem("products")) || []
-    const index = products.findIndex((p) => p.id === productId)
-    if (index !== -1) {
-      products[index] = product
-      localStorage.setItem("products", JSON.stringify(products))
-      document.getElementById("likesCount").textContent = product.likes
-      document.getElementById("likeBtn").classList.add("liked")
+    const commentsList = document.getElementById("commentsList")
+    if (product.reviews && product.reviews.length > 0) {
+      commentsList.innerHTML = product.reviews
+        .map(
+          (comment) => `
+          <div class="comment-item">
+            <div class="comment-header">
+              <strong>${comment.user}</strong>
+              <span class="comment-rating">${"★".repeat(comment.rating)}${"☆".repeat(5 - comment.rating)}</span>
+            </div>
+            <p class="comment-text">${comment.text}</p>
+            <span class="comment-time">${comment.timestamp}</span>
+          </div>
+        `,
+        )
+        .join("")
+    } else {
+      commentsList.innerHTML = `<p class="no-comments">No reviews yet. Be the first to review!</p>`
     }
-  }
 
-  const addToCartBtn = document.getElementById("addToCartBtn")
-  if (addToCartBtn) {
-    addToCartBtn.addEventListener("click", () => {
-      addToCartFromModal(productId);
-    })
-  }
-
-  const contactVendorBtn = document.getElementById("contactVendorBtn")
-  if (contactVendorBtn) {
-    contactVendorBtn.onclick = async () => {
-      console.log("[v0] Contact vendor clicked, vendorId:", product.vendorId)
-      if (!currentUser){
-        alert("Login to continue")
-        window.location.href='login.html';
+    document.getElementById("likeBtn").onclick = () => {
+      product.likes = (product.likes || 0) + 1
+      const products = JSON.parse(localStorage.getItem("products")) || []
+      const index = products.findIndex((p) => p.id === productId)
+      if (index !== -1) {
+        products[index] = product
+        localStorage.setItem("products", JSON.stringify(products))
+        document.getElementById("likesCount").textContent = product.likes
+        document.getElementById("likeBtn").classList.add("liked")
       }
-      try{
-        const response = await fetch(`https://upstartpy.onrender.com/chat/create/${product.vendor_id}`,{
-          method: 'POST',
-          headers: {
-            "Authorization":`Bearer ${currentUser.access}`,
-            "Content-Type":"application/json"
-          }
-        })
-        if (!response.ok){
-          const error = await response.json();
-          console.log(error)
-          if (response.status === 401) alert(error.message)
-          else if (response.status === 404) alert(error.message)
-          return
+    }
+
+    const addToCartBtn = document.getElementById("addToCartBtn")
+    if (addToCartBtn) {
+      addToCartBtn.addEventListener("click", () => {
+        addToCartFromModal(productId);
+      })
+    }
+
+    const contactVendorBtn = document.getElementById("contactVendorBtn")
+    if (contactVendorBtn) {
+      contactVendorBtn.onclick = async () => {
+        console.log("[v0] Contact vendor clicked, vendorId:", product.vendor_id)
+        if (!currentUser){
+          showToast("Please log in to contact vendor", "error");
+          window.location.href='login.html';
+          return;
         }
-        window.location.href = `chat.html?vendorId=${product.vendor_id}`
-      }catch(error){
-        alert('Something went wrong')
+        try{
+          const response = await fetch(`https://upstartpy.onrender.com/chat/create/${product.vendor_id}`,{
+            method: 'POST',
+            headers: {
+              "Authorization":`Bearer ${currentUser.access}`,
+              "Content-Type":"application/json"
+            }
+          })
+          if (!response.ok){
+            const error = await response.json();
+            console.error('Error creating conversation:', response.status, error)
+            showToast(error.message || 'Failed to create conversation', 'error');
+            return
+          }
+          window.location.href = `chat.html?vendorId=${product.vendor_id}`
+        }catch(error){
+          console.error('Error contacting vendor:', error);
+          showToast('Failed to contact vendor. Please try again.', 'error');
+        }
       }
     }
-  }
 
-  const viewVendorBtn = document.getElementById("viewVendorBtn")
-  if (viewVendorBtn) {
-    viewVendorBtn.onclick = () => {
-      console.log("[v0] View vendor clicked, vendorId:", product.vendor_id)
-      window.location.href = `vendor-profile.html?vendorId=${product.vendor_id}`
+    const viewVendorBtn = document.getElementById("viewVendorBtn")
+    if (viewVendorBtn) {
+      viewVendorBtn.onclick = () => {
+        console.log("[v0] View vendor clicked, vendorId:", product.vendor_id)
+        window.location.href = `vendor-profile.html?vendorId=${product.vendor_id}`
+      }
     }
-  }
 
-  
-  document.getElementById("productModal").classList.add("active")
-  const modalContent = document.querySelector(".modal-content");
-  if (modalContent) {
-    modalContent.scrollTop = 0;
+    document.getElementById("productModal").classList.add("active")
+    const modalContent = document.querySelector(".modal-content");
+    if (modalContent) {
+      modalContent.scrollTop = 0;
+    }
+  } catch(error) {
+    console.error('Error opening product modal:', error);
+    showToast('An unexpected error occurred. Please try again.', 'error');
   }
 }
 
@@ -360,7 +433,9 @@ async function addToCartFromModal(productId) {
   const userData = JSON.parse(localStorage.getItem("userData"));
 
   if(!userData) {
+    showToast('Please log in to add items to cart', 'error');
     window.location.href = "login.html";
+    return;
   }
 
   try{
@@ -375,18 +450,25 @@ async function addToCartFromModal(productId) {
 
     if (!response.ok){
       if(response.status === 401){
+        showToast('Session expired. Please log in again.', 'error');
         window.location.href = "login.html";
+        return;
       }
+      const error = await response.json();
+      console.error('Error adding to cart:', response.status, error);
+      showToast(error.detail || 'Failed to add item to cart', 'error');
       return;
     }
-    alert(`Added to cart!`);
+    
+    showToast('Item added to cart!', 'success');
     // Update cart badge
     const badge = document.getElementById("cartBadge")
     if (badge) {
-      badge.textContent ++;
+      badge.textContent++;
     }
   }catch(error){
-
+    console.error('Error adding to cart:', error);
+    showToast('Failed to add item to cart. Please try again.', 'error');
   }
 
   closeProductModal()

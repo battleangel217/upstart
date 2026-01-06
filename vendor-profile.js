@@ -1,3 +1,49 @@
+// Toast notification utility
+function showToast(message, type = 'info', options = {}) {
+  const container = document.getElementById('toast-container') || (() => {
+    const el = document.createElement('div');
+    el.id = 'toast-container';
+    el.style.position = 'fixed';
+    el.style.top = '20px';
+    el.style.right = '20px';
+    el.style.zIndex = '9999';
+    document.body.appendChild(el);
+    return el;
+  })();
+
+  const timeout = options.timeout ?? 3500;
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.setAttribute('role', 'status');
+  toast.setAttribute('aria-live', 'polite');
+  toast.style.padding = '12px 16px';
+  toast.style.marginBottom = '8px';
+  toast.style.borderRadius = '4px';
+  toast.style.backgroundColor = type === 'error' ? '#f44336' : type === 'success' ? '#4caf50' : '#2196f3';
+  toast.style.color = 'white';
+  toast.style.fontSize = '14px';
+  toast.style.boxShadow = '0 2px 8px rgba(0,0,0,0.2)';
+
+  const text = document.createElement('div');
+  text.textContent = message;
+  toast.appendChild(text);
+
+  let removed = false;
+  function dismiss() {
+    if (removed) return;
+    removed = true;
+    toast.style.opacity = '0';
+    toast.style.transition = 'opacity 0.3s ease';
+    setTimeout(() => toast.remove(), 300);
+  }
+
+  container.appendChild(toast);
+  if (timeout > 0) {
+    setTimeout(dismiss, timeout);
+  }
+  return { dismiss };
+}
+
 const params = new URLSearchParams(window.location.search)
 const vendorId = Number.parseInt(params.get("vendorId"))
 
@@ -11,12 +57,26 @@ async function loadVendorProfile() {
         "Authorization":`Bearer ${currentUser.access}`
       }
     })
+
+    if (!response.ok) {
+      console.error('Error fetching vendor profile:', response.status);
+      showToast('Failed to load vendor profile. Please try again.', 'error');
+      hideLoadingModal();
+      return;
+    }
+
     const vendor = await response.json()
+    console.log('Vendor profile loaded:', vendor.info?.username);
+
+    if (!vendor || !vendor.info) {
+      console.error('Invalid vendor data');
+      showToast('Vendor not found.', 'error');
+      hideLoadingModal();
+      return;
+    }
 
     document.getElementById("vendorName").textContent = vendor.info.username
     document.getElementById("vendorUniversity").textContent = vendor.info.institute
-    // document.getElementById("vendorDepartment").textContent = vendor.department
-    // Contact details and bio
     document.getElementById("vendorEmail").textContent = vendor.info.email
     document.getElementById("vendorPhone").textContent = vendor.info.phone
     document.getElementById("vendorBio").textContent = vendor.info.bio
@@ -25,23 +85,15 @@ async function loadVendorProfile() {
     document.getElementById("avgRating").textContent = (vendor.info.rating || 0).toFixed(1)
     document.getElementById("vendorRating").textContent =
       "★".repeat(Math.round(vendor.info.rating || 0)) + "☆".repeat(5 - Math.round(vendor.info.rating || 0))
-    // document.getElementById("reviewCount").textContent = `(${vendor.reviews || 0} reviews)`
 
     loadVendorProducts(vendorId)
     loadVendorVideos()
     hideLoadingModal()
   }catch(error){
-    hideLoadingModal()
-    console.log(error)
+    console.error('Error loading vendor profile:', error);
+    showToast('Failed to load vendor profile. Check your connection.', 'error');
+    hideLoadingModal();
   }
-
-  // if (!vendor) {
-  //   alert("Vendor not found")
-  //   window.location.href = "index.html"
-  //   return
-  // }
-
-  
 }
 
 async function loadVendorProducts(vendorId) {
@@ -54,23 +106,33 @@ async function loadVendorProducts(vendorId) {
         "Authorization":`Bearer ${currentUser.access}`
       }
     })
+
+    if (!response.ok) {
+      console.error('Error fetching vendor products:', response.status);
+      showToast('Failed to load vendor products.', 'error');
+      hideLoadingModal();
+      return;
+    }
+
     const vendorProducts = await response.json()
-    document.getElementById("productCount").textContent = vendorProducts.length
+    console.log('Vendor products loaded:', vendorProducts?.length || 0, 'items');
+    
+    document.getElementById("productCount").textContent = vendorProducts?.length || 0
 
     const grid = document.getElementById("productsGrid")
 
-    if (vendorProducts.length === 0) {
+    if (!vendorProducts || vendorProducts.length === 0) {
       grid.innerHTML =
         '<p style="grid-column: 1/-1; text-align: center; color: var(--text-secondary); padding: 40px;">No products listed yet</p>'
+      hideLoadingModal();
       return
     }
 
-    
     grid.innerHTML = vendorProducts
     .map(
       (product) => `
           <div class="product-card" onclick="openProductModal(${product.id})">
-              <img src="${product.image_url[0]}" alt="${product.product_name}" class="product-image">
+              <img src="${product.image_url?.[0] || '/placeholder.svg'}" alt="${product.product_name}" class="product-image" onerror="this.src='/placeholder.svg'">
               <div class="product-card-body">
                   <div class="product-card-name">${product.product_name}</div>
                   <div class="product-card-price">$${product.price}</div>
@@ -79,13 +141,12 @@ async function loadVendorProducts(vendorId) {
       `,
       )
       .join("")
-    hideLoadingModal()
+    hideLoadingModal();
   }catch(error){
-    hideLoadingModal()
-
+    console.error('Error loading vendor products:', error);
+    showToast('Failed to load vendor products. Check your connection.', 'error');
+    hideLoadingModal();
   }
-
-  
 }
 
 function loadVendorVideos() {
