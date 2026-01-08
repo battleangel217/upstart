@@ -79,7 +79,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const error = await response.json();
       console.error('Error loading products:', response.status, error);
       showToast(`Failed to load products: ${error.detail || 'Unknown error'}`, 'error');
-      hideLoadingModal();
+      await hideLoadingModal();
       return;
     }
 
@@ -90,13 +90,16 @@ document.addEventListener('DOMContentLoaded', async () => {
       console.log('Products loaded successfully:', products.length, 'items');
     }
     
-    renderProducts(products);
-    hideLoadingModal();
+  renderProducts(products);
+  // Wait for skeletons to fade out and be removed, then trigger product fade-ins
+  await hideLoadingModal();
+  const cards = Array.from(document.querySelectorAll('.product-card'));
+  cards.forEach((card, idx) => setTimeout(() => card.classList.add('fade-in'), idx * 50));
 
   }catch(error){
     console.error('Error loading products (index.js):', error);
     showToast('Failed to load products. Please check your connection and try again.', 'error');
-    hideLoadingModal();
+    await hideLoadingModal();
   }
 
 })
@@ -127,16 +130,16 @@ function renderProducts(product) {
   const productGrid = document.getElementById("productsGrid");
 
   product.forEach((item) => {
-    productGrid.innerHTML += `
-      <div class="product-card" id="productCard" onclick="openProductModal(${item.id})">
-          <img src="${item.image_url[0]}" alt="${item.product_name}" class="product-image">
-          <div class="product-card-body">
-              <div class="product-card-name">${item.product_name}</div>
-              <div class="product-card-price">${item.price}</div>
-              <div class="product-card-vendor">${item.vendor_username}</div>
-              <div class="product-card-location">📍 ${item.institute}</div>
-          </div>
-      </div>`;
+  productGrid.innerHTML += `
+    <div class="product-card" onclick="openProductModal(${item.id})">
+      <img src="${item.image_url[0]}" alt="${item.product_name}" class="product-image">
+      <div class="product-card-body">
+        <div class="product-card-name">${item.product_name}</div>
+        <div class="product-card-price">${item.price}</div>
+        <div class="product-card-vendor">${item.vendor_username}</div>
+        <div class="product-card-location">📍 ${item.institute}</div>
+      </div>
+    </div>`;
 
       // document.getElementById("productCard").addEventListener('click', () => {
       //   openProductModal(item.id);
@@ -300,6 +303,7 @@ async function openProductModal(productId) {
     }
   } catch(error) {
     console.error('Error opening product modal:', error);
+    await hideLoadingModal();
     showToast('An unexpected error occurred. Please try again.', 'error');
   }
 }
@@ -476,16 +480,14 @@ async function addToCartFromModal(productId) {
 
 // Helper function to hide loading modal with exit animation
 function hideLoadingModal() {
-  const loadingModal = document.getElementById("loadingModal");
-  if (!loadingModal) return;
-  
-  loadingModal.classList.remove("show");
-  loadingModal.classList.add("hide");
-  loadingModal.setAttribute("aria-hidden", "true");
-  
-  // Remove hide class after animation completes
-  setTimeout(() => {
-    loadingModal.classList.remove("hide");
-    document.body.classList.remove("loading-active");
-  }, 600);
+  const loadingSkeleton = document.querySelectorAll(".product-card-skeleton");
+  if (!loadingSkeleton || loadingSkeleton.length === 0) return Promise.resolve();
+
+  return new Promise((resolve) => {
+    loadingSkeleton.forEach(card => card.classList.add('fade-out'));
+    setTimeout(() => {
+      loadingSkeleton.forEach(card => card.remove());
+      resolve();
+    }, 350);
+  });
 }

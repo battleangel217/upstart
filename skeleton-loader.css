@@ -27,6 +27,23 @@
   gap: 12px;
 }
 
+.product-card-skeleton.fade-out {
+  animation: fadeOut 0.35s forwards;
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(-8px); }
+}
+
+/* Allow other skeleton types to reuse the same fade-out animation */
+.leaderboard-item-skeleton.fade-out,
+.conversation-skeleton.fade-out,
+.skeleton-list.fade-out,
+.skeleton-grid.fade-out {
+  animation: fadeOut 0.35s forwards;
+}
+
 .skeleton-image {
   width: 100%;
   height: 200px;

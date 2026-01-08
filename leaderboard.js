@@ -108,7 +108,7 @@ async function loadLeaderboard() {
     if (!response.ok) {
       console.error('Error fetching top products:', response.status);
       showToast('Failed to load trending products. Please try again.', 'error');
-      hideLoadingModal();
+      await hideLoadingModal();
       return;
     }
 
@@ -121,12 +121,15 @@ async function loadLeaderboard() {
       document.getElementById("trendingProducts").innerHTML = '<p style="text-align: center; color: var(--text-secondary);">No trending products available</p>';
     }
     
-    hideLoadingModal();
+  // Wait for loading modal to finish hiding, then animate product cards in
+  await hideLoadingModal();
+  const cards = Array.from(document.querySelectorAll('#trendingProducts .product-card'));
+  cards.forEach((card, idx) => setTimeout(() => card.classList.add('fade-in'), idx * 50));
 
   }catch(error){
     console.error('Error loading trending products:', error);
     showToast('Failed to load trending products. Check your connection.', 'error');
-    hideLoadingModal();
+    await hideLoadingModal();
   }
 }
 
@@ -309,18 +312,24 @@ function loadVendorPage(vendorId){
 
 // Helper function to hide loading modal with exit animation
 function hideLoadingModal() {
-  const loadingModal = document.getElementById("loadingModal");
-  if (!loadingModal) return;
-  
-  loadingModal.classList.remove("show");
-  loadingModal.classList.add("hide");
-  loadingModal.setAttribute("aria-hidden", "true");
-  
-  // Remove hide class after animation completes
-  setTimeout(() => {
-    loadingModal.classList.remove("hide");
-    document.body.classList.remove("loading-active");
-  }, 600);
+  // Remove any skeleton loaders present on the page (leaderboard-item-skeleton, product-card-skeleton, etc.)
+  const skeletonSelectors = [
+    '.product-card-skeleton',
+    '.leaderboard-item-skeleton',
+    '.skeleton-list',
+    '.skeleton-grid',
+  ];
+
+  const skeletons = Array.from(document.querySelectorAll(skeletonSelectors.join(',')));
+  if (!skeletons || skeletons.length === 0) return Promise.resolve();
+
+  return new Promise((resolve) => {
+    skeletons.forEach(el => el.classList.add('fade-out'));
+    setTimeout(() => {
+      skeletons.forEach(el => el.remove());
+      resolve();
+    }, 350);
+  });
 }
 
 document.addEventListener("DOMContentLoaded", () => {

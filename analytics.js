@@ -75,7 +75,6 @@ async function loadAnalytics() {
     if (!response.ok) {
       console.error('Error fetching analytics:', response.status);
       showToast('Failed to load analytics. Please try again.', 'error');
-      hideLoadingModal();
       return;
     }
 
@@ -84,7 +83,6 @@ async function loadAnalytics() {
 
     if (!data) {
       console.warn('No analytics data received');
-      hideLoadingModal();
       return;
     }
 
@@ -98,12 +96,10 @@ async function loadAnalytics() {
 
     // Load top products
     loadTopProducts()
-    hideLoadingModal();
 
   }catch(error){
     console.error('Error loading analytics:', error);
     showToast('Failed to load analytics. Check your connection.', 'error');
-    hideLoadingModal();
   }
 }
 

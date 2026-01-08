@@ -48,7 +48,7 @@ function showToast(message, type = 'info', options = {}) {
   return { dismiss };
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   const currentUser = JSON.parse(localStorage.getItem("userData"))
   if(!currentUser){
     window.location.href = "login.html";
@@ -58,9 +58,9 @@ document.addEventListener("DOMContentLoaded", () => {
   try {
     self.ws = new WebSocket(`wss://upstartpy.onrender.com/ws/chat?token=${currentUser.access}`)
     
-    ws.onopen = function() {
+    ws.onopen = async function() {
       console.log('✅ WebSocket connected successfully');
-      hideLoadingModal();
+      await hideLoadingModal();
     };
     
     ws.onmessage = function(e) {
@@ -95,15 +95,43 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     };
       
-    ws.onerror = function(error) {
+    ws.onerror = async function(error) {
       console.error('❌ WebSocket error:', error);
       showToast('Failed to connect to chat. Check your connection.', 'error');
-      hideLoadingModal();
+
+      // Ensure the conversations container itself won't be removed by the
+      // skeleton cleanup: remove the skeleton-list class first, then hide
+      // skeletons, then insert the persistent message.
+      try {
+        const list = document.getElementById('conversationsList')
+        if (list) {
+          // Remove any skeleton marker so hideLoadingModal doesn't remove the element
+          list.classList.remove('skeleton-list')
+        }
+      } catch (domErr) {
+        console.warn('Could not remove skeleton-list class before hiding skeletons', domErr)
+      }
+
+      try {
+        await hideLoadingModal();
+      } catch (hideErr) {
+        // If hiding skeletons fails, continue and try to set the message anyway
+        console.warn('hideLoadingModal failed during ws.onerror', hideErr)
+      }
+
+      try {
+        const list = document.getElementById('conversationsList')
+        if (list) {
+          list.innerHTML = '<div class="no-conversations" style="padding: 20px; text-align: center; color: var(--text-secondary); font-size: 14px;">No conversations found</div>'
+        }
+      } catch (domErr) {
+        console.warn('Could not update conversations sidebar after WS error', domErr)
+      }
     };
   } catch(error) {
     console.error('Error initializing WebSocket:', error);
     showToast('Failed to initialize chat. Please try again.', 'error');
-    hideLoadingModal();
+    await hideLoadingModal();
   }
 
   // Reset scroll positions to default on page load.
@@ -376,16 +404,21 @@ function closeSidebarOnMobile() {
 
 // Helper function to hide loading modal with exit animation
 function hideLoadingModal() {
-  const loadingModal = document.getElementById("loadingModal");
-  if (!loadingModal) return;
-  
-  loadingModal.classList.remove("show");
-  loadingModal.classList.add("hide");
-  loadingModal.setAttribute("aria-hidden", "true");
-  
-  // Remove hide class after animation completes
-  setTimeout(() => {
-    loadingModal.classList.remove("hide");
-    document.body.classList.remove("loading-active");
-  }, 600);
+  // Remove conversation skeletons (sidebar) and any other skeletons on the chat page
+  const skeletonSelectors = [
+    '.conversation-skeleton',
+    '.skeleton-list',
+    '.skeleton-grid',
+  ];
+
+  const skeletons = Array.from(document.querySelectorAll(skeletonSelectors.join(',')));
+  if (!skeletons || skeletons.length === 0) return Promise.resolve();
+
+  return new Promise((resolve) => {
+    skeletons.forEach(el => el.classList.add('fade-out'));
+    setTimeout(() => {
+      skeletons.forEach(el => el.remove());
+      resolve();
+    }, 350);
+  });
 }

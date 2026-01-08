@@ -438,7 +438,18 @@ body {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   cursor: pointer;
   transition: all 0.3s ease;
+  /* start hidden so adding .fade-in will animate from invisible -> visible */
+  opacity: 0;
 }
+.product-card.fade-in {
+  animation: fadeIn 0.35s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 
 .product-card:hover {
   transform: translateY(-8px);
