@@ -352,6 +352,9 @@ body {
 
 .form-group textarea {
   resize: vertical;
+  /* Fix scroll issue on mobile */
+  overscroll-behavior: contain;
+  touch-action: pan-y;
 }
 
 .form-row {
