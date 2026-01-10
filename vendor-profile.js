@@ -44,6 +44,32 @@ function showToast(message, type = 'info', options = {}) {
   return { dismiss };
 }
 
+// Helper function to remove skeleton loaders with animation
+function removeSkeletonLoaders() {
+  const loadingSkeleton = document.querySelectorAll(".product-card-skeleton");
+  if (!loadingSkeleton || loadingSkeleton.length === 0) return Promise.resolve();
+
+  return new Promise((resolve) => {
+    loadingSkeleton.forEach(card => card.classList.add('fade-out'));
+    setTimeout(() => {
+      loadingSkeleton.forEach(card => card.remove());
+      resolve();
+    }, 350);
+  });
+}
+
+// Helper function to remove vendor header skeleton
+function removeHeaderSkeleton() {
+  const headerSkeleton = document.querySelector('.vendor-header-skeleton');
+  if (!headerSkeleton) return;
+  
+  headerSkeleton.classList.add('fade-out');
+  setTimeout(() => {
+    headerSkeleton.remove();
+    // Show actual content if hidden (not using .hidden class here based on HTML structure but good practice)
+  }, 350);
+}
+
 const params = new URLSearchParams(window.location.search)
 const vendorId = Number.parseInt(params.get("vendorId"))
 
@@ -86,12 +112,15 @@ async function loadVendorProfile() {
     document.getElementById("vendorRating").textContent =
       "★".repeat(Math.round(vendor.info.rating || 0)) + "☆".repeat(5 - Math.round(vendor.info.rating || 0))
 
+    removeHeaderSkeleton()
+    
     loadVendorProducts(vendorId)
     loadVendorVideos()
     hideLoadingModal()
   }catch(error){
     console.error('Error loading vendor profile:', error);
     showToast('Failed to load vendor profile. Check your connection.', 'error');
+    removeHeaderSkeleton()
     hideLoadingModal();
   }
 }
@@ -122,11 +151,15 @@ async function loadVendorProducts(vendorId) {
     const grid = document.getElementById("productsGrid")
 
     if (!vendorProducts || vendorProducts.length === 0) {
+      removeSkeletonLoaders()
       grid.innerHTML =
         '<p style="grid-column: 1/-1; text-align: center; color: var(--text-secondary); padding: 40px;">No products listed yet</p>'
       hideLoadingModal();
       return
     }
+
+    // Remove skeletons before rendering
+    await removeSkeletonLoaders()
 
     grid.innerHTML = vendorProducts
     .map(
@@ -141,10 +174,26 @@ async function loadVendorProducts(vendorId) {
       `,
       )
       .join("")
+      
+    // Trigger fade-in animation
+    const cards = Array.from(document.querySelectorAll('.product-card'));
+    cards.forEach((card, idx) => setTimeout(() => card.classList.add('fade-in'), idx * 50));
+    
     hideLoadingModal();
   }catch(error){
     console.error('Error loading vendor products:', error);
     showToast('Failed to load vendor products. Check your connection.', 'error');
+    
+    removeSkeletonLoaders()
+    const grid = document.getElementById("productsGrid")
+    if (grid) {
+      grid.innerHTML = `
+        <div class="empty-inventory" style="grid-column: 1/-1;">
+          <div class="empty-icon">⚠️</div>
+          <p class="empty-text">Failed to load products. Please refresh the page.</p>
+        </div>
+      `;
+    }
     hideLoadingModal();
   }
 }
