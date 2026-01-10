@@ -224,7 +224,7 @@ function loadRecentOrders() {
                     <div class="order-date">${order.date}</div>
                 </div>
                 <div>
-                    <div class="order-amount">$${order.amount}</div>
+                    <div class="order-amount">₦${order.amount}</div>
                     <div class="order-status">${order.status}</div>
                 </div>
             </div>

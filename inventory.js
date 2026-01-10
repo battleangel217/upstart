@@ -108,7 +108,7 @@ async function loadInventory() {
               <img src="${product.image_url?.[0] || '/placeholder.svg'}" alt="${product.product_name}" class="product-image" onerror="this.src='/placeholder.svg'">
               <div class="product-card-body">
                   <div class="product-card-name">${product.product_name}</div>
-                  <div class="product-card-price">$${product.price}</div>
+                  <div class="product-card-price">₦${product.price}</div>
                   <div class="product-card-info">Qty: ${product.quantity}</div>
                   <div class="product-card-info">Views: ${product.view_count || 0}</div>
                   ${product.videoUrl ? `<div class="product-card-info" style="cursor: pointer;" onclick="initVideoViewer(${JSON.stringify([product]).replace(/"/g, "&quot;")}, 0)">🎥 View Video</div>` : ""}

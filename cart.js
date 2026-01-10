@@ -120,7 +120,7 @@ async function renderCartItems() {
         <div class="item-details">
           <div>
             <div class="item-name">${itemName}</div>
-            <div class="item-price">$${productPrice.toFixed(2)}</div>
+            <div class="item-price">₦${productPrice.toFixed(2)}</div>
             <div class="item-vendor">${vendorName}</div>
           </div>
         </div>
@@ -210,10 +210,10 @@ async function updateCartSummary() {
     const taxEl = document.getElementById("tax");
     const totalEl = document.getElementById("total");
 
-    if (subtotalEl) subtotalEl.textContent = `$${subtotal.toFixed(2)}`;
-    if (shippingEl) shippingEl.textContent = `$${shipping.toFixed(2)}`;
-    if (taxEl) taxEl.textContent = `$${tax.toFixed(2)}`;
-    if (totalEl) totalEl.textContent = `$${total.toFixed(2)}`;
+    if (subtotalEl) subtotalEl.textContent = `₦${subtotal.toFixed(2)}`;
+    if (shippingEl) shippingEl.textContent = `₦${shipping.toFixed(2)}`;
+    if (taxEl) taxEl.textContent = `₦${tax.toFixed(2)}`;
+    if (totalEl) totalEl.textContent = `₦${total.toFixed(2)}`;
   }catch(error){
     console.error('Error updating cart summary:', error);
     showToast('Failed to update cart summary. Check your connection.', 'error');
@@ -304,7 +304,7 @@ function checkoutItem(productId) {
   const balance = users[userIndex].walletBalance || 0
 
   if (balance < itemTotal) {
-    alert(`Insufficient wallet balance. You need $${itemTotal.toFixed(2)} but have $${balance.toFixed(2)}`)
+    alert(`Insufficient wallet balance. You need ₦${itemTotal.toFixed(2)} but have ₦${balance.toFixed(2)}`)
     return
   }
 
@@ -340,7 +340,7 @@ function checkoutItem(productId) {
   })
   localStorage.setItem("notifications", JSON.stringify(notifications))
 
-  alert(`Payment of $${itemTotal.toFixed(2)} successful! Order placed.`)
+  alert(`Payment of ₦${itemTotal.toFixed(2)} successful! Order placed.`)
   renderCartItems()
 }
 

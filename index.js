@@ -135,7 +135,7 @@ function renderProducts(product) {
       <img src="${item.image_url[0]}" alt="${item.product_name}" class="product-image">
       <div class="product-card-body">
         <div class="product-card-name">${item.product_name}</div>
-        <div class="product-card-price">${item.price}</div>
+        <div class="product-card-price">₦${item.price}</div>
         <div class="product-card-vendor">${item.vendor_username}</div>
         <div class="product-card-location">📍 ${item.institute}</div>
       </div>
@@ -189,7 +189,7 @@ async function openProductModal(productId) {
 
     // Update modal content
     document.getElementById("productName").textContent = product.product_name
-    document.getElementById("productPrice").textContent = `$${product.price}`
+    document.getElementById("productPrice").textContent = `₦${product.price}`
     document.getElementById("productDescription").textContent = product.description
     document.getElementById("productLocation").textContent = product.institute
     document.getElementById("productCategory").textContent = product.category

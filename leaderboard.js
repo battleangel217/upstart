@@ -209,7 +209,7 @@ async function loadTrendingProducts(products) {
                 <img src="${product.image_url[0]}" alt="${product.product_name}" class="product-image">
                 <div class="product-info">
                     <div class="product-name">${product.product_name}</div>
-                    <div class="product-price">$${product.unit_price}</div>
+                    <div class="product-price">₦${product.unit_price}</div>
                     <div class="product-views">${product.units_sold || 0} Units Sold</div>
                 </div>
             </div>

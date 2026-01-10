@@ -88,7 +88,7 @@ async function loadWalletData() {
     console.log('Wallet balance loaded:', balance);
 
     if (balance && typeof balance.balance === 'number') {
-      document.getElementById("balanceAmount").textContent = `$${(balance.balance).toFixed(2)}`
+      document.getElementById("balanceAmount").textContent = `₦${(balance.balance).toFixed(2)}`
     } else {
       console.warn('Invalid balance data received');
     }
@@ -131,10 +131,10 @@ async function verifyPayment(reference, amount) {
     if (response.ok && result.status === "success") {
       // Payment successful
       showPaymentState("success", {
-        amount: `$${amount.toFixed(2)}`,
+        amount: `₦${amount.toFixed(2)}`,
         reference: reference
       })
-      showToast(`Payment of $${amount.toFixed(2)} successful!`, 'success');
+      showToast(`Payment of ₦${amount.toFixed(2)} successful!`, 'success');
       
       // Reload wallet data after a short delay
       setTimeout(() => {
@@ -180,7 +180,7 @@ function loadTransactionHistory() {
                 <div class="transaction-date">${new Date(t.date).toLocaleDateString()}</div>
             </div>
             <div class="transaction-amount ${t.type === "credit" ? "amount-credit" : "amount-debit"}">
-                ${t.type === "credit" ? "+" : "-"}$${t.amount.toFixed(2)}
+                ${t.type === "credit" ? "+" : "-"}₦${t.amount.toFixed(2)}
             </div>
         </div>
     `,
@@ -271,7 +271,7 @@ document.getElementById("submitAddMoney").addEventListener("click", async () => 
   }
 
   if (amount > 1000000) {
-    showToast("Amount exceeds maximum limit of $1,000,000", 'error');
+    showToast("Amount exceeds maximum limit of ₦1,000,000", 'error');
     return
   }
 
@@ -379,7 +379,7 @@ document.getElementById("submitWithdraw").addEventListener("click", () => {
     transactions.push(transaction)
     localStorage.setItem("transactions", JSON.stringify(transactions))
 
-    alert(`Successfully withdrew $${amount.toFixed(2)}!`)
+    alert(`Successfully withdrew ₦${amount.toFixed(2)}!`)
     closeDrawer("withdrawDrawer")
     loadWalletData()
     document.getElementById("withdrawAmount").value = ""

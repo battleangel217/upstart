@@ -135,7 +135,7 @@ async function loadVendorProducts(vendorId) {
               <img src="${product.image_url?.[0] || '/placeholder.svg'}" alt="${product.product_name}" class="product-image" onerror="this.src='/placeholder.svg'">
               <div class="product-card-body">
                   <div class="product-card-name">${product.product_name}</div>
-                  <div class="product-card-price">$${product.price}</div>
+                  <div class="product-card-price">₦${product.price}</div>
               </div>
           </div>
       `,
@@ -276,7 +276,7 @@ async function openProductModal(productId) {
   if (!product) return
 
   document.getElementById("productName").textContent = product.name
-  document.getElementById("productPrice").textContent = `$${product.price}`
+  document.getElementById("productPrice").textContent = `₦${product.price}`
   document.getElementById("productDescription").textContent = product.description
   document.getElementById("productLocation").textContent = product.institute
   document.getElementById("quantityAvailable").textContent = product.quantity
