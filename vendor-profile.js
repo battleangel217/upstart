@@ -295,7 +295,7 @@ async function loadVendorContent() {
 
     grid.innerHTML = items.map((it, index) => {
       return `
-        <div class="product-card">
+        <div class="product-card fade-in">
           <div class="video-container" onclick="initVideoViewer(window._vendorContentItems, ${index})">
             <video src="${it.video || '#'}" class="video-player-preview"></video>
           </div>
