@@ -582,6 +582,7 @@ body {
   color: var(--text-secondary);
   cursor: pointer;
   transition: all 0.2s ease;
+  flex-shrink: 0; /* Prevent shrinking on small screens */
 }
 
 .btn-icon:hover {
@@ -620,9 +621,14 @@ body {
     order: 2;
   }
 
-  .btn-secondary {
+  .vendor-actions {
     order: 3;
     width: 100%;
+    justify-content: center;
+  }
+
+  .vendor-actions .btn-secondary {
+    flex: 1;
   }
 
   .stats-grid {
