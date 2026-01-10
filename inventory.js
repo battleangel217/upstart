@@ -695,7 +695,7 @@ async function loadContent() {
   }
 
     try {
-    const res = await fetch('https://upstartpy.onrender.com/customers/mycontents/', {
+    const res = await fetch(`https://upstartpy.onrender.com/customers/mycontents/?_=${new Date().getTime()}`, {
       method: 'GET',
       headers: { 'Authorization': `Bearer ${currentUser.access}` }
     })
@@ -884,12 +884,15 @@ if (uploadModalForm) {
       }
       
       hideLoadingModal();
-      alert('Content added successfully!');
+      showToast('Content added successfully!', 'success'); // Use showToast instead of alert for better UX
       uploadModalForm.reset()
       if (contentVideoInput) contentVideoInput.value = ''
       _contentVideoFile = null
       clearContentVideoPreview()
       document.getElementById('uploadContentModal')?.classList.remove('active')
+      
+      // Refresh content list
+      loadContent()
       
     } catch (error) {
       hideLoadingModal();
