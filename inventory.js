@@ -148,7 +148,12 @@ async function loadInventory() {
       `,
       )
       .join("")
+    
     hideLoadingModal()
+    
+    // Trigger fade-in animation for product cards
+    const cards = Array.from(document.querySelectorAll('.product-card'));
+    cards.forEach((card, idx) => setTimeout(() => card.classList.add('fade-in'), idx * 50));
   }catch(error){
     console.error('Error loading inventory:', error);
     showToast('Failed to load inventory. Check your connection.', 'error');
