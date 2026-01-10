@@ -936,11 +936,19 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.95);
+  background: rgba(0, 0, 0, 0.85); /* Slightly more transparent */
+  backdrop-filter: blur(8px); /* Blur the content behind */
+  -webkit-backdrop-filter: blur(8px); /* Safari support */
   z-index: 300;
   align-items: center;
   justify-content: center;
   padding: 20px;
+  overscroll-behavior: contain; /* Prevent scroll chaining */
+  touch-action: none; /* Disable default touch actions */
+}
+
+body.video-active {
+  overflow: hidden; /* Prevent body scroll when video is active */
 }
 
 .video-viewer-modal.active {

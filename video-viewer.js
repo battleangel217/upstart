@@ -13,6 +13,7 @@ function openVideoViewer() {
 
   const videoModal = document.getElementById("videoViewerModal")
   videoModal.classList.add("active")
+  document.body.classList.add("video-active"); // Add class to lock scroll
   displayCurrentVideo()
 }
 
@@ -193,27 +194,13 @@ function previousVideo() {
 
 function closeVideoViewer() {
   const modal = document.getElementById("videoViewerModal")
+  const player = document.getElementById("mainVideoPlayer")
   if (modal) {
     modal.classList.remove("active")
-  }
-
-  // Ensure the main video is paused and unloaded so it doesn't keep playing
-  // in the background after the modal is closed.
-  const player = document.getElementById("mainVideoPlayer")
-  if (player) {
-    try {
-      // Pause playback
+    document.body.classList.remove("video-active"); // Remove class to unlock scroll
+    if (player) {
       player.pause()
-      // Reset playback position
-      try { player.currentTime = 0 } catch (e) { /* may throw on some browsers if not loaded */ }
-
-      // Remove src and any child <source> elements to stop network activity
-      player.removeAttribute('src')
-      while (player.firstChild) player.removeChild(player.firstChild)
-      // Force the element to reload/stop
-      player.load()
-    } catch (err) {
-      console.warn('Error while stopping video playback:', err)
+      player.src = "" // Clean up source to stop download
     }
   }
 }

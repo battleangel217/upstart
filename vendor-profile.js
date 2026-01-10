@@ -93,13 +93,11 @@ const params = new URLSearchParams(window.location.search)
 const vendorId = Number.parseInt(params.get("vendorId"))
 
 async function loadVendorProfile() {
-  const currentUser = JSON.parse(localStorage.getItem('userData'))
   try{
     const response = await fetch(`https://upstartpy.onrender.com/auth/user/${vendorId}`,{
       method: "GET",
       headers: {
         "Content-Type":"application/json",
-        "Authorization":`Bearer ${currentUser.access}`
       }
     })
 
@@ -137,6 +135,27 @@ async function loadVendorProfile() {
     document.getElementById("avgRating").textContent = (vendor.info.rating || 0).toFixed(1)
     document.getElementById("vendorRating").textContent =
       "★".repeat(Math.round(vendor.info.rating || 0)) + "☆".repeat(5 - Math.round(vendor.info.rating || 0))
+      
+    // Setup Share Button
+    const shareBtn = document.getElementById('shareBtn');
+    if (shareBtn) {
+        shareBtn.onclick = () => {
+            if (navigator.share) {
+                navigator.share({
+                    title: `Check out ${vendor.info.username}'s profile on Upstart`,
+                    text: `Visit ${vendor.info.username}'s vendor profile to see their products and videos.`,
+                    url: window.location.href,
+                })
+                .then(() => showToast('Profile shared successfully!', 'success'))
+                .catch((error) => console.log('Error sharing:', error));
+            } else {
+                // Fallback for browsers that don't support Web Share API
+                navigator.clipboard.writeText(window.location.href)
+                    .then(() => showToast('Profile link copied to clipboard!', 'success'))
+                    .catch(() => showToast('Failed to copy link', 'error'));
+            }
+        };
+    }
 
     removeHeaderSkeleton()
     
@@ -152,13 +171,11 @@ async function loadVendorProfile() {
 }
 
 async function loadVendorProducts(vendorId) {
-  const currentUser = JSON.parse(localStorage.getItem('userData'))
   try{
     const response = await fetch(`https://upstartpy.onrender.com/products/vendor-products/${vendorId}`, {
       method: "GET",
       headers: {
         "Content-Type":"application/json",
-        "Authorization":`Bearer ${currentUser.access}`
       }
     })
 
@@ -282,23 +299,17 @@ function loadVendorVideos() {
 
 // Load vendor's content (videos posted by the vendor)
 async function loadVendorContent() {
-  const currentUser = JSON.parse(localStorage.getItem("userData"))
   const grid = document.getElementById('contentsGrid')
   if (!grid) return
 
   // Show a loading placeholder
   grid.innerHTML = `<div class="empty-inventory" style="grid-column: 1/-1;"><p class="empty-text">Loading content...</p></div>`
 
-  if (!currentUser || !currentUser.access) {
-    window.location.href = 'login.html'
-    return
-  }
 
   try {
     // Fetch content posted by this specific vendor
     const res = await fetch(`https://upstartpy.onrender.com/customers/vendorcontents/${vendorId}`, {
       method: 'GET',
-      headers: { 'Authorization': `Bearer ${currentUser.access}` }
     })
     if (!res.ok) throw new Error('Failed to fetch')
     const items = await res.json()

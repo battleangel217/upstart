@@ -564,6 +564,32 @@ body {
   box-shadow: 0 8px 16px rgba(255, 184, 0, 0.3);
 }
 
+/* Vendor Actions */
+.vendor-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn-icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 12px;
+  background-color: var(--secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-icon:hover {
+  background-color: #e2e8f0;
+  color: var(--primary);
+  border-color: var(--primary);
+}
+
 @media (max-width: 800px) {
   .main-content {
     min-width: 100%;
