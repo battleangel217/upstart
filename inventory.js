@@ -50,6 +50,20 @@ function showToast(message, type = 'info', options = {}) {
   return { dismiss };
 }
 
+// Helper function to remove skeleton loaders with animation
+function removeSkeletonLoaders() {
+  const loadingSkeleton = document.querySelectorAll(".product-card-skeleton");
+  if (!loadingSkeleton || loadingSkeleton.length === 0) return Promise.resolve();
+
+  return new Promise((resolve) => {
+    loadingSkeleton.forEach(card => card.classList.add('fade-out'));
+    setTimeout(() => {
+      loadingSkeleton.forEach(card => card.remove());
+      resolve();
+    }, 350);
+  });
+}
+
 function checkAuth() {
   const currentUser = JSON.parse(localStorage.getItem("userData"))
   if (!currentUser) {
@@ -68,6 +82,8 @@ async function loadInventory() {
   const currentUser = checkAuth()
   if (!currentUser) return
 
+  const grid = document.getElementById("productsGrid")
+
   try{
     const response = await fetch('https://upstartpy.onrender.com/products/my_products/',
       {
@@ -81,14 +97,25 @@ async function loadInventory() {
     if (!response.ok) {
       console.error('Error loading inventory:', response.status);
       showToast('Failed to load your products. Please try again.', 'error');
+      
+      // Remove skeleton loaders and show error message
+      removeSkeletonLoaders();
+      grid.innerHTML = `
+        <div class="empty-inventory" style="grid-column: 1/-1;">
+          <div class="empty-icon">⚠️</div>
+          <p class="empty-text">Failed to load products. Please refresh the page.</p>
+        </div>
+      `;
+      
       hideLoadingModal();
       return;
     }
 
     const vendorProducts = await response.json()
     console.log('Inventory loaded:', vendorProducts?.length || 0, 'products');
-
-    const grid = document.getElementById("productsGrid")
+    
+    // Remove skeleton loaders before rendering products
+    await removeSkeletonLoaders()
 
     if (!vendorProducts || vendorProducts.length === 0) {
       grid.innerHTML = `
@@ -125,6 +152,19 @@ async function loadInventory() {
   }catch(error){
     console.error('Error loading inventory:', error);
     showToast('Failed to load inventory. Check your connection.', 'error');
+    
+    // Remove skeleton loaders and show error message
+    removeSkeletonLoaders();
+    const grid = document.getElementById("productsGrid")
+    if (grid) {
+      grid.innerHTML = `
+        <div class="empty-inventory" style="grid-column: 1/-1;">
+          <div class="empty-icon">⚠️</div>
+          <p class="empty-text">Failed to load products. Please check your connection and try again.</p>
+        </div>
+      `;
+    }
+    
     hideLoadingModal();
   }
 }
