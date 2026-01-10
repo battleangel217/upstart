@@ -103,8 +103,15 @@ async function loadVendorProfile() {
 
     document.getElementById("vendorName").textContent = vendor.info.username
     document.getElementById("vendorUniversity").textContent = vendor.info.institute
-    document.getElementById("vendorEmail").textContent = vendor.info.email
-    document.getElementById("vendorPhone").textContent = vendor.info.phone
+    if (document.getElementById("vendorEmail")) {
+        document.getElementById("vendorEmail").textContent = vendor.info.email
+    }
+    if (document.getElementById("vendorPhone")) {
+        document.getElementById("vendorPhone").textContent = vendor.info.phone
+    }
+    if(document.getElementById("vendorDepartment") && vendor.info.department){
+        document.getElementById("vendorDepartment").textContent = vendor.info.department
+    }
     document.getElementById("vendorBio").textContent = vendor.info.bio
     document.getElementById("vendorImage").src = vendor.info.profile_url || "/placeholder.svg?height=120&width=120"
     document.getElementById("totalSales").textContent = vendor.sales || 0
