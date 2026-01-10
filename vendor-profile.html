@@ -26,39 +26,41 @@
                     </div>
                 </div>
 
-                <div class="vendor-header">
-                    <img id="vendorImage" src="/placeholder.svg?height=120&width=120" alt="Vendor" class="vendor-avatar">
-                    <div class="vendor-header-info">
-                        <h1 id="vendorName"></h1>
-                        <p id="vendorUniversity"></p>
-                        <p id="vendorDepartment"></p>
-                        <div class="vendor-rating">
-                            <span class="stars" id="vendorRating">★★★★★</span>
-                            <span id="reviewCount">(0 reviews)</span>
+                <div id="vendorProfileContent" style="display: none; opacity: 0; transition: opacity 0.5s ease;">
+                    <div class="vendor-header">
+                        <img id="vendorImage" src="/placeholder.svg?height=120&width=120" alt="Vendor" class="vendor-avatar">
+                        <div class="vendor-header-info">
+                            <h1 id="vendorName"></h1>
+                            <p id="vendorUniversity"></p>
+                            <p id="vendorDepartment"></p>
+                            <div class="vendor-rating">
+                                <span class="stars" id="vendorRating">★★★★★</span>
+                                <span id="reviewCount">(0 reviews)</span>
+                            </div>
                         </div>
+                        <button class="btn-secondary" id="contactBtn">Contact Vendor</button>
                     </div>
-                    <button class="btn-secondary" id="contactBtn">Contact Vendor</button>
-                </div>
 
-                <!-- About Section -->
-                <div class="about-section">
-                    <h3>About This Seller</h3>
-                    <div class="vendor-bio">
-                        <h4>Bio</h4>
-                        <p id="vendorBio">No bio available.</p>
-                    </div>
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <span class="stat-label">Total Sales</span>
-                            <span class="stat-value" id="totalSales">0</span>
+                    <!-- About Section -->
+                    <div class="about-section">
+                        <h3>About This Seller</h3>
+                        <div class="vendor-bio">
+                            <h4>Bio</h4>
+                            <p id="vendorBio">No bio available.</p>
                         </div>
-                        <div class="stat-card">
-                            <span class="stat-label">Rating</span>
-                            <span class="stat-value" id="avgRating">0.0</span>
-                        </div>
-                        <div class="stat-card">
-                            <span class="stat-label">Products</span>
-                            <span class="stat-value" id="productCount">0</span>
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <span class="stat-label">Total Sales</span>
+                                <span class="stat-value" id="totalSales">0</span>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-label">Rating</span>
+                                <span class="stat-value" id="avgRating">0.0</span>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-label">Products</span>
+                                <span class="stat-value" id="productCount">0</span>
+                            </div>
                         </div>
                     </div>
                 </div>

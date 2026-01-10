@@ -220,15 +220,6 @@
             <div class="modal-body">
                 <h2>Add Content</h2>
                 <form id="uploadModalForm">
-                    <!-- <div class="form-group">
-                        <label>Content Title</label>
-                        <input type="text" id="contentTitle" required placeholder="Enter your Content Title">
-                    </div> -->
-                    <div class="form-group">
-                        <label>Caption</label>
-                        <textarea id="caption" required rows="4" placeholder="Describe your content"></textarea>
-                    </div>
-
                     <div class="form-group">
                         <label>Content Video</label>
                         <div class="video-upload" onclick="document.getElementById('contentVideo').click()">
@@ -238,6 +229,12 @@
                         <!-- Preview container for the selected content video (only one allowed) -->
                         <div id="contentVideoPreview" class="video-preview-container" aria-live="polite"></div>
                     </div>
+
+                    <div class="form-group">
+                        <label>Caption</label>
+                        <textarea id="caption" required rows="4" placeholder="Describe your content"></textarea>
+                    </div>
+
 
                      <div class="form-actions">
                         <button type="submit" class="btn-primary">Upload Content</button>

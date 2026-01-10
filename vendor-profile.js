@@ -61,13 +61,25 @@ function removeSkeletonLoaders() {
 // Helper function to remove vendor header skeleton
 function removeHeaderSkeleton() {
   const headerSkeleton = document.querySelector('.vendor-header-skeleton');
-  if (!headerSkeleton) return;
+  const profileContent = document.getElementById('vendorProfileContent');
   
-  headerSkeleton.classList.add('fade-out');
-  setTimeout(() => {
-    headerSkeleton.remove();
-    // Show actual content if hidden (not using .hidden class here based on HTML structure but good practice)
-  }, 350);
+  if (headerSkeleton) {
+    headerSkeleton.classList.add('fade-out');
+    setTimeout(() => {
+      headerSkeleton.remove();
+    }, 350);
+  }
+  
+  if (profileContent) {
+    profileContent.style.display = 'block';
+    // Use requestAnimationFrame to ensure the display change is painted before changing opacity
+    requestAnimationFrame(() => {
+      // Small timeout to ensure transition triggers
+      setTimeout(() => {
+        profileContent.style.opacity = '1';
+      }, 50);
+    });
+  }
 }
 
 const params = new URLSearchParams(window.location.search)
