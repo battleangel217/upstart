@@ -39,6 +39,7 @@
 /* Allow other skeleton types to reuse the same fade-out animation */
 .leaderboard-item-skeleton.fade-out,
 .conversation-skeleton.fade-out,
+.vendor-header-skeleton.fade-out,
 .skeleton-list.fade-out,
 .skeleton-grid.fade-out {
   animation: fadeOut 0.35s forwards;

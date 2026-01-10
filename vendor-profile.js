@@ -65,6 +65,13 @@ function removeHeaderSkeleton() {
   
   if (headerSkeleton) {
     headerSkeleton.classList.add('fade-out');
+    // We delay removal to let the animation play, 
+    // BUT we show the new content immediately (overlapping) or right after?
+    // A cross-fade is best: show new content (opacity 0->1), hide skeleton (opacity 1->0) simultaneously.
+    
+    // Position absolute trick might be needed for perfect cross-fade, 
+    // or just let them stack for a moment (looks okay if fast).
+    
     setTimeout(() => {
       headerSkeleton.remove();
     }, 350);
