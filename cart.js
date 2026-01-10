@@ -270,12 +270,50 @@ async function openProductModal(productId) {
                       <div style="font-size: 14px; font-weight: 600; margin-bottom: 4px;">${product.vendor_username || 'Unknown'}</div>
                       <div style="font-size: 12px; color: var(--text-secondary);">${product.vendor_email || 'N/A'}</div>
                   </div>
+                  <div style="margin-top: 16px;">
+                    <button id="shareProductBtn_${product.id}" class="btn-icon" style="display: flex; align-items: center; gap: 8px; padding: 10px; border: 1px solid var(--border); border-radius: 8px; background: white; cursor: pointer;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="18" cy="5" r="3"></circle>
+                            <circle cx="6" cy="12" r="3"></circle>
+                            <circle cx="18" cy="19" r="3"></circle>
+                            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                        </svg>
+                        <span>Share Product</span>
+                    </button>
+                  </div>
               </div>
           </div>
       `
 
     document.getElementById("productDetailsContainer").innerHTML = html
     document.getElementById("productModal").classList.add("active")
+
+    // Bind share event
+    setTimeout(() => {
+        const shareBtn = document.getElementById(`shareProductBtn_${product.id}`);
+        if(shareBtn) {
+            shareBtn.onclick = () => {
+                const shareUrl = new URL(window.location.origin + '/index.html'); // Share link points to main index page
+                shareUrl.searchParams.set("productId", product.id);
+                
+                if (navigator.share) {
+                    navigator.share({
+                        title: `Check out ${product.product_name} on Upstart`,
+                        text: `I found this amazing ${product.product_name} on Upstart. Check it out!`,
+                        url: shareUrl.toString(),
+                    })
+                    .then(() => showToast('Product shared successfully!', 'success'))
+                    .catch((error) => console.log('Error sharing:', error));
+                } else {
+                    navigator.clipboard.writeText(shareUrl.toString())
+                        .then(() => showToast('Product link copied to clipboard!', 'success'))
+                        .catch(() => showToast('Failed to copy link', 'error'));
+                }
+            }
+        }
+    }, 100);
+
   } catch(error) {
     console.error('Error opening product modal:', error);
     showToast('Failed to load product details. Check your connection.', 'error');
@@ -436,7 +474,26 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   renderCartItems()
   hideLoadingModal()
+  updateCartSummary()
+  updateCartBadge()
+  
+  // Check for productId in URL to auto-open modal even on cart page
+  const urlParams = new URLSearchParams(window.location.search);
+  const productId = urlParams.get('productId');
+  if (productId) {
+      openProductModal(productId);
+  }
 })
+
+function updateCartBadge() {
+  const cart = JSON.parse(localStorage.getItem("cart")) || [];
+  const badge = document.getElementById("cartBadge");
+
+  if (badge) {
+    const itemCount = cart.reduce((total, item) => total + (item.quantity || 1), 0);
+    badge.textContent = itemCount > 0 ? itemCount : "";
+  }
+}
 
 // Helper function to hide loading modal with exit animation
 function hideLoadingModal() {

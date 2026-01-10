@@ -102,6 +102,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     await hideLoadingModal();
   }
 
+  // Check for productId in URL to auto-open modal
+  const urlParams = new URLSearchParams(window.location.search);
+  const productId = urlParams.get('productId');
+  if (productId) {
+      openProductModal(productId);
+  }
+
 })
 
 // function renderProducts(products = null) {
@@ -198,58 +205,31 @@ async function openProductModal(productId) {
     document.getElementById("productRating").textContent =
       "★".repeat(Math.round(product.rating)) + "☆".repeat(5 - Math.round(product.rating))
 
-    document.getElementById("likesCount").textContent = product.likes || 0
-    document.getElementById("vendorName").textContent = product.vendor_username
-    document.getElementById("vendorEmail").textContent = product.vendor_email
-    document.getElementById("vendorImage").src = product.pfp
-    document.getElementById("vendorRating").textContent =
-      "★".repeat(Math.round(product.vendor_rating)) + "☆".repeat(5 - Math.round(product.vendor_rating))
-
-    // Update gallery
-    document.getElementById("galleryMainImage").src = product.image_url[0]
-    const thumbnails = document.getElementById("galleryThumbnails")
-    thumbnails.innerHTML = product.image_url
-      .map(
-        (img, idx) => `
-          <div class="gallery-thumbnail" onclick="event.stopPropagation(); document.getElementById('galleryMainImage').src='${img}'">
-              <img src="${img}" alt="Image ${idx + 1}">
-          </div>
-      `,
-      )
-      .join("")
-
-    const commentsList = document.getElementById("commentsList")
-    if (product.reviews && product.reviews.length > 0) {
-      commentsList.innerHTML = product.reviews
-        .map(
-          (comment) => `
-          <div class="comment-item">
-            <div class="comment-header">
-              <strong>${comment.user}</strong>
-              <span class="comment-rating">${"★".repeat(comment.rating)}${"☆".repeat(5 - comment.rating)}</span>
-            </div>
-            <p class="comment-text">${comment.text}</p>
-            <span class="comment-time">${comment.timestamp}</span>
-          </div>
-        `,
-        )
-        .join("")
-    } else {
-      commentsList.innerHTML = `<p class="no-comments">No reviews yet. Be the first to review!</p>`
-    }
-
-    document.getElementById("likeBtn").onclick = () => {
-      product.likes = (product.likes || 0) + 1
-      const products = JSON.parse(localStorage.getItem("products")) || []
-      const index = products.findIndex((p) => p.id === productId)
-      if (index !== -1) {
-        products[index] = product
-        localStorage.setItem("products", JSON.stringify(products))
-        document.getElementById("likesCount").textContent = product.likes
-        document.getElementById("likeBtn").classList.add("liked")
+        // Setup Share Product Button
+    const shareProductBtn = document.getElementById("shareProductBtn")
+    if (shareProductBtn) {
+      shareProductBtn.onclick = () => {
+        // Construct URL with productId parameter
+        const shareUrl = new URL(window.location.href)
+        shareUrl.searchParams.set("productId", product.id)
+        
+        if (navigator.share) {
+          navigator.share({
+            title: `Check out ${product.product_name} on Upstart`,
+            text: `I found this amazing ${product.product_name} on Upstart. Check it out!`,
+            url: shareUrl.toString(),
+          })
+          .then(() => showToast('Product shared successfully!', 'success'))
+          .catch((error) => console.log('Error sharing:', error));
+        } else {
+          navigator.clipboard.writeText(shareUrl.toString())
+            .then(() => showToast('Product link copied to clipboard!', 'success'))
+            .catch(() => showToast('Failed to copy link', 'error'));
+        }
       }
     }
 
+    // Handle add to cart
     const addToCartBtn = document.getElementById("addToCartBtn")
     if (addToCartBtn) {
       addToCartBtn.addEventListener("click", () => {

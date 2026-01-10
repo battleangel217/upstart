@@ -371,6 +371,33 @@ async function openProductModal(productId) {
   document.getElementById("quantityAvailable").textContent = product.quantity
   document.getElementById("galleryMainImage").src = product.image_url[0]
 
+  // Setup Share Product Button
+  const shareProductBtn = document.getElementById("shareProductBtn")
+  if (shareProductBtn) {
+    shareProductBtn.onclick = () => {
+      // Construct URL with productId parameter
+      const shareUrl = new URL(window.location.href)
+      shareUrl.searchParams.set("productId", product.id)
+      
+      // Keep vendorId if present so the product opens in context of the vendor profile
+      // It's already in window.location.href, so it stays unless we remove it.
+
+      if (navigator.share) {
+        navigator.share({
+          title: `Check out ${product.name} on Upstart`,
+          text: `I found this amazing ${product.name} on Upstart. Check it out!`,
+          url: shareUrl.toString(),
+        })
+        .then(() => showToast('Product shared successfully!', 'success'))
+        .catch((error) => console.log('Error sharing:', error));
+      } else {
+        navigator.clipboard.writeText(shareUrl.toString())
+          .then(() => showToast('Product link copied to clipboard!', 'success'))
+          .catch(() => showToast('Failed to copy link', 'error'));
+      }
+    }
+  }
+
   document.getElementById("addToCartBtn").onclick = async () => {
     const userData = JSON.parse(localStorage.getItem("userData"));
 
@@ -431,6 +458,13 @@ function hideLoadingModal() {
 
 document.addEventListener("DOMContentLoaded", () => {
   loadVendorProfile()
+
+  // Check for productId in URL to auto-open modal
+  const urlParams = new URLSearchParams(window.location.search);
+  const productId = urlParams.get('productId');
+  if (productId) {
+      openProductModal(productId);
+  }
   
   document.getElementById("closeProductModal").addEventListener("click", closeProductModal)
   document.getElementById("productModal").addEventListener("click", function (e) {
