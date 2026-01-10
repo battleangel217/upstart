@@ -212,6 +212,9 @@ function loadVendorVideos() {
   const videosSection = document.getElementById("videosSection")
   const videosGrid = document.getElementById("videosGrid")
 
+  // If section doesn't exist, exit quietly
+  if (!videosSection || !videosGrid) return
+
   if (vendorProducts.length === 0) {
     videosSection.style.display = "none"
     return
