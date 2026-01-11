@@ -224,6 +224,8 @@ body {
     align-items: center;
     gap: 32px;
     overflow-y: auto;
+    overflow-x: hidden; /* Added to prevent horizontal scroll issues */
+    -webkit-overflow-scrolling: touch; /* For smoother mobility scrolling */
 }
 
 .order-info-section {
