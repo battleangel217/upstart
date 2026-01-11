@@ -348,12 +348,12 @@ Upstart is a comprehensive **Student Marketplace Platform** designed to facilita
 ## Key Technologies
 
 - **Frontend**: HTML5, CSS3, JavaScript (Vanilla JS)
-- **Backend**: Python (Django/FastAPI) - `https://upstartpy.onrender.com`
+- **Backend**: Python (Django/FastAPI)
+- **Backend API**: RESTful endpoints (configurable via environment)
 - **Real-time**: WebSockets for chat
 - **Storage**: Supabase for images
 - **Payments**: Paystack integration
 - **Authentication**: JWT tokens
-- **APIs**: RESTful endpoints
 
 ---
 

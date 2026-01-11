@@ -44,7 +44,7 @@ Upstart is a comprehensive student marketplace platform that enables university 
 
 ## Documentation
 
-For a complete list of capabilities, see [CAPABILITIES.md](./CAPABILITIES.md)
+For a complete list of capabilities, see [CAPABILITIES.md](CAPABILITIES.md)
 
 ## Technology Stack
 
