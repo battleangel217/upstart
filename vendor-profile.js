@@ -369,7 +369,38 @@ async function openProductModal(productId) {
   document.getElementById("productDescription").textContent = product.description
   document.getElementById("productLocation").textContent = product.institute
   document.getElementById("quantityAvailable").textContent = product.quantity
-  document.getElementById("galleryMainImage").src = product.image_url[0]
+  
+  // Update image gallery
+  const images = product.image_url || [];
+  const mainImage = document.getElementById("galleryMainImage");
+  const thumbnailsContainer = document.getElementById("galleryThumbnails");
+  
+  if (images.length > 0) {
+    // Set main image
+    mainImage.src = images[0];
+    mainImage.alt = product.name;
+    
+    // Clear and populate thumbnails
+    thumbnailsContainer.innerHTML = '';
+    images.forEach((imageUrl, index) => {
+      const thumbnail = document.createElement('img');
+      thumbnail.src = imageUrl;
+      thumbnail.alt = `${product.name} - Image ${index + 1}`;
+      thumbnail.className = 'gallery-thumbnail' + (index === 0 ? ' active' : '');
+      thumbnail.onclick = () => {
+        mainImage.src = imageUrl;
+        // Update active thumbnail
+        thumbnailsContainer.querySelectorAll('.gallery-thumbnail').forEach(t => t.classList.remove('active'));
+        thumbnail.classList.add('active');
+      };
+      thumbnailsContainer.appendChild(thumbnail);
+    });
+  } else {
+    // Fallback if no images
+    mainImage.src = '/placeholder.svg';
+    mainImage.alt = 'No image available';
+    thumbnailsContainer.innerHTML = '';
+  }
 
   // Setup Share Product Button
   const shareProductBtn = document.getElementById("shareProductBtn")

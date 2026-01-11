@@ -205,6 +205,38 @@ async function openProductModal(productId) {
     document.getElementById("productRating").textContent =
       "★".repeat(Math.round(product.rating)) + "☆".repeat(5 - Math.round(product.rating))
 
+    // Update image gallery
+    const images = product.image_url || [];
+    const mainImage = document.getElementById("galleryMainImage");
+    const thumbnailsContainer = document.getElementById("galleryThumbnails");
+    
+    if (images.length > 0) {
+      // Set main image
+      mainImage.src = images[0];
+      mainImage.alt = product.product_name;
+      
+      // Clear and populate thumbnails
+      thumbnailsContainer.innerHTML = '';
+      images.forEach((imageUrl, index) => {
+        const thumbnail = document.createElement('img');
+        thumbnail.src = imageUrl;
+        thumbnail.alt = `${product.product_name} - Image ${index + 1}`;
+        thumbnail.className = 'gallery-thumbnail' + (index === 0 ? ' active' : '');
+        thumbnail.onclick = () => {
+          mainImage.src = imageUrl;
+          // Update active thumbnail
+          thumbnailsContainer.querySelectorAll('.gallery-thumbnail').forEach(t => t.classList.remove('active'));
+          thumbnail.classList.add('active');
+        };
+        thumbnailsContainer.appendChild(thumbnail);
+      });
+    } else {
+      // Fallback if no images
+      mainImage.src = '/placeholder.svg';
+      mainImage.alt = 'No image available';
+      thumbnailsContainer.innerHTML = '';
+    }
+
         // Setup Share Product Button
     const shareProductBtn = document.getElementById("shareProductBtn")
     if (shareProductBtn) {
