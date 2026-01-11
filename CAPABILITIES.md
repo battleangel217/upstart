@@ -293,7 +293,7 @@ Upstart is a comprehensive **Student Marketplace Platform** designed to facilita
 - JWT token authentication
 - Supabase storage for images
 - University data from external API
-- Backend URL: `https://upstartpy.onrender.com`
+- Backend URL configured per environment
 
 #### WebSocket Features
 - Real-time chat messaging
