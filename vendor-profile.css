@@ -485,16 +485,15 @@ body {
 }
 
 .product-stats {
-  display: grid;
-  gap: 12px;
-  padding: 16px;
-  background: var(--secondary);
-  border-radius: 8px;
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap; /* Allow wrapping on small screens */
 }
 
 .stat-item {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
 }
 
 .stat-label {
@@ -589,6 +588,32 @@ body {
   background-color: #e2e8f0;
   color: var(--primary);
   border-color: var(--primary);
+}
+
+/* Gallery Thumbnails */
+.gallery-thumbnails {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding: 4px;
+}
+
+.thumbnail {
+  width: 60px;
+  height: 60px;
+  border-radius: 6px;
+  cursor: pointer;
+  object-fit: cover;
+  border: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.thumbnail.active {
+  border-color: var(--accent);
+}
+
+.thumbnail:hover {
+  opacity: 0.8;
 }
 
 @media (max-width: 800px) {

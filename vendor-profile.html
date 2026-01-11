@@ -142,6 +142,9 @@
                     <div class="gallery-main">
                         <img id="galleryMainImage" src="/placeholder.svg" alt="Product" class="main-image">
                     </div>
+                    <div class="gallery-thumbnails" id="galleryThumbnails">
+                        <!-- Thumbnails will be added here via JS -->
+                    </div>
                 </div>
 
                 <!-- Product Info -->
@@ -157,6 +160,14 @@
                             <span class="stat-label">Available:</span>
                             <span class="stat-value" id="quantityAvailable">0</span>
                         </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Views:</span>
+                            <span class="stat-value" id="viewCount">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Rating:</span>
+                            <span class="stars" id="productRating" style="color: var(--accent);">★★★★★</span>
+                        </div>
                     </div>
 
                     <div class="product-description">
@@ -168,6 +179,10 @@
                         <div class="detail-item">
                             <span class="detail-label">Location:</span>
                             <span class="detail-value" id="productLocation"></span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Category:</span>
+                            <span class="detail-value" id="productCategory"></span>
                         </div>
                     </div>
 

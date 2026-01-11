@@ -364,13 +364,45 @@ async function openProductModal(productId) {
 
   if (!product) return
 
-  document.getElementById("productName").textContent = product.name
+  document.getElementById("productName").textContent = product.product_name || product.name
   document.getElementById("productPrice").textContent = `₦${product.price}`
   document.getElementById("productDescription").textContent = product.description
   document.getElementById("productLocation").textContent = product.institute
   document.getElementById("quantityAvailable").textContent = product.quantity
-  document.getElementById("galleryMainImage").src = product.image_url[0]
+  document.getElementById("viewCount").textContent = product.view_count || 0
+  document.getElementById("productCategory").textContent = product.category || 'N/A'
+  document.getElementById("productRating").textContent = 
+    "★".repeat(Math.round(product.rating || 0)) + "☆".repeat(5 - Math.round(product.rating || 0))
 
+  // Handle Product Images
+  const mainImage = document.getElementById("galleryMainImage")
+  const thumbnailsContainer = document.getElementById("galleryThumbnails")
+  
+  // Reset images
+  mainImage.src = "/placeholder.svg"
+  thumbnailsContainer.innerHTML = ""
+
+  if (product.image_url && product.image_url.length > 0) {
+    // Set main image
+    mainImage.src = product.image_url[0]
+    
+    // Create thumbnails if there are multiple images
+    if (product.image_url.length > 1) {
+      product.image_url.forEach((url, index) => {
+        const thumb = document.createElement("img")
+        thumb.src = url
+        thumb.className = index === 0 ? "thumbnail active" : "thumbnail"
+        thumb.onclick = () => {
+          mainImage.src = url
+          // Update active state
+          document.querySelectorAll(".thumbnail").forEach(t => t.classList.remove("active"))
+          thumb.classList.add("active")
+        }
+        thumbnailsContainer.appendChild(thumb)
+      })
+    }
+  }
+  
   // Setup Share Product Button
   const shareProductBtn = document.getElementById("shareProductBtn")
   if (shareProductBtn) {

@@ -205,7 +205,42 @@ async function openProductModal(productId) {
     document.getElementById("productRating").textContent =
       "★".repeat(Math.round(product.rating)) + "☆".repeat(5 - Math.round(product.rating))
 
-        // Setup Share Product Button
+    // Handle Product Images
+    const mainImage = document.getElementById("galleryMainImage")
+    const thumbnailsContainer = document.getElementById("galleryThumbnails")
+    
+    // Reset images
+    mainImage.src = "/placeholder.svg"
+    thumbnailsContainer.innerHTML = ""
+
+    if (product.image_url && product.image_url.length > 0) {
+      // Set main image
+      mainImage.src = product.image_url[0]
+      
+      // Create thumbnails if there are multiple images
+      if (product.image_url.length > 1) {
+        product.image_url.forEach((url, index) => {
+          const thumb = document.createElement("img")
+          thumb.src = url
+          thumb.className = index === 0 ? "thumbnail active" : "thumbnail"
+          thumb.onclick = () => {
+            mainImage.src = url
+            // Update active state
+            document.querySelectorAll(".thumbnail").forEach(t => t.classList.remove("active"))
+            thumb.classList.add("active")
+          }
+          thumbnailsContainer.appendChild(thumb)
+        })
+      }
+    }
+
+    // Load vendor details
+      document.getElementById('vendorImage').src = product.pfp
+      document.getElementById("vendorName").textContent = product.vendor_username
+      document.getElementById("vendorRating").textContent =
+        "★".repeat(Math.round(product.vendor_rating)) + "☆".repeat(5 - Math.round(product.vendor_rating))
+      // document.getElementById("vendorProductsCount").textContent = vendor.products_count
+    // Setup Share Product Button
     const shareProductBtn = document.getElementById("shareProductBtn")
     if (shareProductBtn) {
       shareProductBtn.onclick = () => {
