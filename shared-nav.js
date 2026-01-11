@@ -79,6 +79,7 @@ async function initializeNavigation() {
             <div class="profile-dropdown" id="profileDropdown">
               <a href="profile.html" class="dropdown-item" id="viewProfile">View Profile</a>
               <a href="inventory.html" class="dropdown-item vendor-only" style="display:none;" id="inventoryLink">My Inventory</a>
+              <a href="orders.html" class="dropdown-item">Orders</a>
               <a href="chat.html" class="dropdown-item">Messages</a>
               <a href="#" class="dropdown-item logout-item" id="logoutBtn">Logout</a>
             </div>
@@ -95,6 +96,10 @@ async function initializeNavigation() {
         <a href="leaderboard.html" class="mobile-menu-item">
           <span>🏆</span>
           <span>Leaderboard</span>
+        </a>
+        <a href="orders.html" class="mobile-menu-item">
+          <span>🛍️</span>
+          <span>Orders</span>
         </a>
         <a href="analytics.html" class="mobile-menu-item vendor-only" style="display:none;" id="mobileAnalyticsLink">
           <span>📊</span>

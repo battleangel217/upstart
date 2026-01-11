@@ -371,15 +371,22 @@ document.getElementById("messageInput").addEventListener("keypress", (e) => {
 
 // Mobile sidebar toggle functionality
 const sidebarToggleBtn = document.getElementById("sidebarToggleBtn")
+const sidebarToggleBtnDetail = document.getElementById("sidebarToggleBtnDetail")
 const sidebar = document.querySelector(".sidebar")
 const chatContainer = document.querySelector(".chat-container")
 
+function toggleSidebar(e) {
+  e.stopPropagation()
+  sidebar.classList.toggle("open")
+  chatContainer.classList.toggle("sidebar-open")
+}
+
 if (sidebarToggleBtn) {
-  sidebarToggleBtn.addEventListener("click", (e) => {
-    e.stopPropagation()
-    sidebar.classList.toggle("open")
-    chatContainer.classList.toggle("sidebar-open")
-  })
+  sidebarToggleBtn.addEventListener("click", toggleSidebar)
+}
+
+if (sidebarToggleBtnDetail) {
+  sidebarToggleBtnDetail.addEventListener("click", toggleSidebar)
 }
 
 // Close sidebar when clicking overlay

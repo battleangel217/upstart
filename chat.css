@@ -412,6 +412,11 @@ display: flex;
     background: var(--accent);
     border-bottom: 1px solid var(--border);
     min-height: 56px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 10;
   }
 
   .chat-header {
