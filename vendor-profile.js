@@ -151,14 +151,31 @@ async function loadVendorProfile() {
         shareBtn.onclick = async () => {
             if (navigator.share) {
                 try {
-                    await navigator.share({
+                    const shareData = {
                         title: `${vendor.info.username} Profile - Upstart`,
                         text: vendor.info.bio || "Check out this vendor's profile",
                         url: window.location.href
-                    });
+                    };
+
+                    try {
+                        const imgUrl = vendor.info.profile_url || profileImage;
+                        if (imgUrl) {
+                            const response = await fetch(imgUrl);
+                            const blob = await response.blob();
+                            const file = new File([blob], 'vendor-profile.png', { type: blob.type });
+                            
+                            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                                shareData.files = [file];
+                            }
+                        }
+                    } catch (e) {
+                         console.warn('Could not fetch image for sharing', e);
+                    }
+
+                    await navigator.share(shareData);
                     showToast('Profile shared successfully!', 'success');
                 } catch (error) {
-                    console.log('Error sharing:', error);
+                    if (error.name !== 'AbortError') console.log('Error sharing:', error);
                 }
             } else {
                 // Fallback for browsers that don't support Web Share API
