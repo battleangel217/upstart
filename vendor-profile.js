@@ -118,6 +118,11 @@ async function loadVendorProfile() {
       return;
     }
 
+    document.getElementById("ogTitle").setAttribute('content', `${vendor.info.username} Profile - Upstart`)
+    document.getElementById("ogImage").setAttribute('content', vendor.info.profile_url)
+    document.getElementById("ogUrl").setAttribute('content', window.location.href)
+
+
     document.getElementById("vendorName").textContent = vendor.info.username
     document.getElementById("vendorUniversity").textContent = vendor.info.institute
     if (document.getElementById("vendorEmail")) {
@@ -141,12 +146,7 @@ async function loadVendorProfile() {
     if (shareBtn) {
         shareBtn.onclick = () => {
             if (navigator.share) {
-                navigator.share({
-                    title: `Check out ${vendor.info.username}'s profile on Upstart`,
-                    text: `Visit ${vendor.info.username}'s vendor profile to see their products and videos.`,
-                    url: window.location.href,
-                })
-                .then(() => showToast('Profile shared successfully!', 'success'))
+                showToast('Profile shared successfully!', 'success')
                 .catch((error) => console.log('Error sharing:', error));
             } else {
                 // Fallback for browsers that don't support Web Share API
