@@ -118,9 +118,13 @@ async function loadVendorProfile() {
       return;
     }
 
+    const profileImage = vendor.info.profile_url || "https://icuklzexzhusblkzglnr.supabase.co/storage/v1/object/public/marketplace/logo/Upstart(2).png"; 
     document.getElementById("ogTitle").setAttribute('content', `${vendor.info.username} Profile - Upstart`)
-    document.getElementById("ogImage").setAttribute('content', vendor.info.profile_url)
+    document.getElementById("ogImage").setAttribute('content', profileImage)
     document.getElementById("ogUrl").setAttribute('content', window.location.href)
+    const bioText = vendor.info.bio || "Check out this vendor's profile on Upstart";
+    const ogDesc = document.getElementById("ogDescription");
+    if(ogDesc) ogDesc.setAttribute('content', bioText);
 
 
     document.getElementById("vendorName").textContent = vendor.info.username
@@ -144,10 +148,18 @@ async function loadVendorProfile() {
     // Setup Share Button
     const shareBtn = document.getElementById('shareBtn');
     if (shareBtn) {
-        shareBtn.onclick = () => {
+        shareBtn.onclick = async () => {
             if (navigator.share) {
-                showToast('Profile shared successfully!', 'success')
-                .catch((error) => console.log('Error sharing:', error));
+                try {
+                    await navigator.share({
+                        title: `${vendor.info.username} Profile - Upstart`,
+                        text: vendor.info.bio || "Check out this vendor's profile",
+                        url: window.location.href
+                    });
+                    showToast('Profile shared successfully!', 'success');
+                } catch (error) {
+                    console.log('Error sharing:', error);
+                }
             } else {
                 // Fallback for browsers that don't support Web Share API
                 navigator.clipboard.writeText(window.location.href)
