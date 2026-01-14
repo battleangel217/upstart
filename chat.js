@@ -68,7 +68,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         const data = JSON.parse(e.data);
         
         if (data.type === 'conversation_list') {
-            console.log('💬 Conversations loaded:', data.conversations?.length || 0);
+            console.log('💬 Conversations loaded:', data.conversations);
             loadConversations(data.conversations);
         }else if (data.type === "my_messages"){
           console.log('📨 Messages loaded:', data.messages?.length || 0);
@@ -156,6 +156,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 async function loadConversations(conversations) {
     const currentUser = JSON.parse(localStorage.getItem('userData'))
     const list = document.getElementById("conversationsList")
+    if (!list) return // Guard clause if list doesn't exist
+    
     if (conversations.length === 0) {
       list.innerHTML =
       '<div style="padding: 20px; text-align: center; color: var(--text-secondary); font-size: 14px;">No conversations yet</div>'
@@ -166,7 +168,7 @@ async function loadConversations(conversations) {
     conversations.forEach((participant) => {
         let isRead = '';
         const lastMessageText = participant.last_message?.text ?? "No messages yet"
-        if(participant.last_message.sender === currentUser.user.id){
+        if(participant.last_message?.sender === currentUser?.user?.id){
           isRead = participant.last_message?.is_read ? "Seen" : "Delivered"
         }
         const unreadHTML = (participant.unread_count && participant.unread_count > 0) ? `<span class="conversation-unread-badge">${participant.unread_count}</span>` : `<span class="conversation-unread-badge" style="display: none;">${participant.unread_count}</span>`
@@ -185,9 +187,11 @@ async function loadConversations(conversations) {
             </div>
           </div>
         `
-    })
-    list.innerHTML = html 
-
+        
+      })
+      list.innerHTML = html 
+      console.log(list.innerHTML)
+      
 }
 
 function openConversation(participantId, participantName, pfp, status, last_seen, vendorId) {
@@ -246,9 +250,14 @@ function openConversation(participantId, participantName, pfp, status, last_seen
   }))
 
   // Close sidebar on mobile when conversation is selected
-  closeSidebarOnMobile()
-  console.log("hehie")
-}
+  if (window.innerWidth <= 768) {
+    const sidebar = document.querySelector(".sidebar")
+    const chatContainer = document.querySelector(".chat-container")
+    
+    if (sidebar) sidebar.classList.remove("open")
+    if (chatContainer) chatContainer.classList.remove("sidebar-open")
+  }
+} // End of openConversation
 
 function loadMessages(conversationMessages) {
   const currentUser = JSON.parse(localStorage.getItem("userData"))
@@ -411,12 +420,18 @@ function closeSidebarOnMobile() {
 
 // Helper function to hide loading modal with exit animation
 function hideLoadingModal() {
-  // Remove conversation skeletons (sidebar) and any other skeletons on the chat page
+  // Remove conversation skeletons items, but not the container
+  // We target .conversation-skeleton (the items) and any standalone .skeleton-loader
+  // We do NOT target .skeleton-list or .skeleton-grid as they are container classes
   const skeletonSelectors = [
     '.conversation-skeleton',
-    '.skeleton-list',
-    '.skeleton-grid',
+    '.product-card-skeleton', 
   ];
+
+  // Simply remove the container classes from any elements that have them
+  // so we don't keep loading styles on the list containers
+  document.querySelectorAll('.skeleton-list').forEach(el => el.classList.remove('skeleton-list'));
+  document.querySelectorAll('.skeleton-grid').forEach(el => el.classList.remove('skeleton-grid'));
 
   const skeletons = Array.from(document.querySelectorAll(skeletonSelectors.join(',')));
   if (!skeletons || skeletons.length === 0) return Promise.resolve();

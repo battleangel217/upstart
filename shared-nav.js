@@ -23,7 +23,7 @@ async function initializeNavigation() {
         </div>
 
         <div class="navbar-center">
-          <div class="search-bar">
+          <div class="search-bar desktop-search">
             <input 
               type="text" 
               id="sharedSearchInput" 
@@ -35,6 +35,7 @@ async function initializeNavigation() {
         </div>
 
         <div class="navbar-right">
+          <!-- Mobile search toggle (hidden on desktop via css) -->
           <button class="nav-button search-toggle-btn mobile-only" id="mobileSearchToggle" title="Search">
             🔍
           </button>
@@ -147,18 +148,34 @@ async function initializeNavigation() {
 }
 
 function initializeNavbarEvents() {
-  // Hide search bar on non-landing pages
+  // Hide search bar on non-index pages
+  // Note: we check if we ARE on the index page
   const isLandingPage = window.location.pathname.endsWith('index.html') || 
                         window.location.pathname === '/' ||
                         window.location.pathname.endsWith('/')
   
-  const searchBar = document.querySelector('.search-bar')
-  if (searchBar && !isLandingPage) {
-    searchBar.style.display = 'none'
+  // Specific targeting to avoid ambiguity
+  const desktopSearchBar = document.querySelector('.navbar-center .search-bar')
+  const mobileSearchBtn = document.getElementById('mobileSearchToggle')
+  const mobileSearchContainer = document.getElementById('mobileSearchContainer')
+
+  if (!isLandingPage) {
+    // Hide everything if not on index
+    if (desktopSearchBar) desktopSearchBar.style.display = 'none'
+    if (mobileSearchBtn) mobileSearchBtn.style.display = 'none'
+    if (mobileSearchContainer) mobileSearchContainer.style.display = 'none'
+  } else {
+    // We are on index page
+    // Ensure desktop search is visible (flex)
+    if (desktopSearchBar) desktopSearchBar.style.display = 'flex'
+    // Mobile button visibility is handled by CSS .mobile-only class
+    // Mobile search container visibility is handled by toggle logic (starts hidden)
   }
 
   // Initialize mobile search toggle
   setupSearchToggle();
+
+  // Mobile menu toggle
 
   // Mobile menu toggle
   const mobileMenuBtn = document.getElementById("mobileMenuBtn")

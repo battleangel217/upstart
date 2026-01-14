@@ -118,27 +118,27 @@ async function loadVendorProfile() {
       return;
     }
 
-    // Use vendor profile picture if available, otherwise use a default placeholder (not the logo)
-    const profileImage = vendor.info.profile_url || "https://icuklzexzhusblkzglnr.supabase.co/storage/v1/object/public/marketplace/logo/Upstart(2).png"; 
+    // // Use vendor profile picture if available, otherwise use a default placeholder (not the logo)
+    // const profileImage = vendor.info.profile_url || "https://icuklzexzhusblkzglnr.supabase.co/storage/v1/object/public/marketplace/logo/Upstart(2).png"; 
     
-    // Update Open Graph meta tags for link sharing
-    const titleText = `${vendor.info.username} - Vendor Profile | Upstart`;
-    const bioText = vendor.info.bio || `Check out ${vendor.info.username}'s profile on Upstart`;
+    // // Update Open Graph meta tags for link sharing
+    // const titleText = `${vendor.info.username} - Vendor Profile | Upstart`;
+    // const bioText = vendor.info.bio || `Check out ${vendor.info.username}'s profile on Upstart`;
     
-    document.getElementById("ogTitle")?.setAttribute('content', titleText);
-    document.getElementById("ogImage")?.setAttribute('content', profileImage);
-    document.getElementById("ogUrl")?.setAttribute('content', window.location.href);
-    document.getElementById("ogDescription")?.setAttribute('content', bioText);
+    // document.getElementById("ogTitle")?.setAttribute('content', titleText);
+    // document.getElementById("ogImage")?.setAttribute('content', profileImage);
+    // document.getElementById("ogUrl")?.setAttribute('content', window.location.href);
+    // document.getElementById("ogDescription")?.setAttribute('content', bioText);
     
-    // Update Twitter Card meta tags as well
-    document.getElementById("twitterTitle")?.setAttribute('content', titleText);
-    document.getElementById("twitterImage")?.setAttribute('content', profileImage);
-    document.getElementById("twitterDescription")?.setAttribute('content', bioText);
+    // // Update Twitter Card meta tags as well
+    // document.getElementById("twitterTitle")?.setAttribute('content', titleText);
+    // document.getElementById("twitterImage")?.setAttribute('content', profileImage);
+    // document.getElementById("twitterDescription")?.setAttribute('content', bioText);
     
-    // If we have an actual profile image, use summary_large_image, otherwise use summary
-    if (vendor.info.profile_url) {
-      document.getElementById("twitterCard")?.setAttribute('content', 'summary_large_image');
-    }
+    // // If we have an actual profile image, use summary_large_image, otherwise use summary
+    // if (vendor.info.profile_url) {
+    //   document.getElementById("twitterCard")?.setAttribute('content', 'summary_large_image');
+    // }
     
     // Also update the page title dynamically
     document.title = titleText;
@@ -171,23 +171,23 @@ async function loadVendorProfile() {
                     const shareData = {
                         title: `${vendor.info.username} Profile - Upstart`,
                         text: vendor.info.bio || "Check out this vendor's profile",
-                        url: window.location.href
+                        url: `https://upstartpy.onrender.com/vendor-profile/?vendorId=${vendorId}`
                     };
 
-                    try {
-                        const imgUrl = vendor.info.profile_url || profileImage;
-                        if (imgUrl) {
-                            const response = await fetch(imgUrl);
-                            const blob = await response.blob();
-                            const file = new File([blob], 'vendor-profile.png', { type: blob.type });
+                    // try {
+                    //     const imgUrl = vendor.info.profile_url || profileImage;
+                    //     if (imgUrl) {
+                    //         const response = await fetch(imgUrl);
+                    //         const blob = await response.blob();
+                    //         const file = new File([blob], 'vendor-profile.png', { type: blob.type });
                             
-                            if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                                shareData.files = [file];
-                            }
-                        }
-                    } catch (e) {
-                         console.warn('Could not fetch image for sharing', e);
-                    }
+                    //         if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    //             shareData.files = [file];
+                    //         }
+                    //     }
+                    // } catch (e) {
+                    //      console.warn('Could not fetch image for sharing', e);
+                    // }
 
                     await navigator.share(shareData);
                     showToast('Profile shared successfully!', 'success');
@@ -196,7 +196,7 @@ async function loadVendorProfile() {
                 }
             } else {
                 // Fallback for browsers that don't support Web Share API
-                navigator.clipboard.writeText(window.location.href)
+                navigator.clipboard.writeText(`https://upstartpy.onrender.com/vendor-profile/?vendorId=${vendorId}`)
                     .then(() => showToast('Profile link copied to clipboard!', 'success'))
                     .catch(() => showToast('Failed to copy link', 'error'));
             }
