@@ -118,13 +118,30 @@ async function loadVendorProfile() {
       return;
     }
 
+    // Use vendor profile picture if available, otherwise use a default placeholder (not the logo)
     const profileImage = vendor.info.profile_url || "https://icuklzexzhusblkzglnr.supabase.co/storage/v1/object/public/marketplace/logo/Upstart(2).png"; 
-    document.getElementById("ogTitle").setAttribute('content', `${vendor.info.username} Profile - Upstart`)
-    document.getElementById("ogImage").setAttribute('content', profileImage)
-    document.getElementById("ogUrl").setAttribute('content', window.location.href)
-    const bioText = vendor.info.bio || "Check out this vendor's profile on Upstart";
-    const ogDesc = document.getElementById("ogDescription");
-    if(ogDesc) ogDesc.setAttribute('content', bioText);
+    
+    // Update Open Graph meta tags for link sharing
+    const titleText = `${vendor.info.username} - Vendor Profile | Upstart`;
+    const bioText = vendor.info.bio || `Check out ${vendor.info.username}'s profile on Upstart`;
+    
+    document.getElementById("ogTitle")?.setAttribute('content', titleText);
+    document.getElementById("ogImage")?.setAttribute('content', profileImage);
+    document.getElementById("ogUrl")?.setAttribute('content', window.location.href);
+    document.getElementById("ogDescription")?.setAttribute('content', bioText);
+    
+    // Update Twitter Card meta tags as well
+    document.getElementById("twitterTitle")?.setAttribute('content', titleText);
+    document.getElementById("twitterImage")?.setAttribute('content', profileImage);
+    document.getElementById("twitterDescription")?.setAttribute('content', bioText);
+    
+    // If we have an actual profile image, use summary_large_image, otherwise use summary
+    if (vendor.info.profile_url) {
+      document.getElementById("twitterCard")?.setAttribute('content', 'summary_large_image');
+    }
+    
+    // Also update the page title dynamically
+    document.title = titleText;
 
 
     document.getElementById("vendorName").textContent = vendor.info.username

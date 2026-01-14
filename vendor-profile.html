@@ -4,10 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="profile">
     <meta property="og:title" content="Vendor Profile - Upstart" id="ogTitle">
     <meta property="og:description" content="Check out this vendor's profile" id="ogDescription">
     <meta property="og:image" content="https://icuklzexzhusblkzglnr.supabase.co/storage/v1/object/public/marketplace/logo/Upstart(2).png" id="ogImage">
+    <meta property="og:image:width" content="1200" id="ogImageWidth">
+    <meta property="og:image:height" content="630" id="ogImageHeight">
     <meta property="og:url" content="https://upstart-e9ry.onrender.com/vendor-profile.html" id="ogUrl">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" id="twitterCard">
+    <meta name="twitter:title" content="Vendor Profile - Upstart" id="twitterTitle">
+    <meta name="twitter:description" content="Check out this vendor's profile" id="twitterDescription">
+    <meta name="twitter:image" content="https://icuklzexzhusblkzglnr.supabase.co/storage/v1/object/public/marketplace/logo/Upstart(2).png" id="twitterImage">
     
     <title>Vendor Profile - Upstart</title>
     <link rel="stylesheet" href="index.css">
@@ -15,6 +25,36 @@
     <link rel="stylesheet" href="skeleton-loader.css">
     <link rel="icon" href="https://icuklzexzhusblkzglnr.supabase.co/storage/v1/object/public/marketplace/logo/Upstart_3_-removebg-preview.png" type="image/png">
     <link rel="apple-touch-icon" href="https://icuklzexzhusblkzglnr.supabase.co/storage/v1/object/public/marketplace/logo/Upstart_3_-removebg-preview.png">
+    
+    <!-- Inline script to update meta tags ASAP before any scraping happens -->
+    <script>
+        (function() {
+            const params = new URLSearchParams(window.location.search);
+            const vendorId = params.get("vendorId");
+            if (vendorId) {
+                // Try to fetch and update meta tags immediately
+                fetch(`https://upstartpy.onrender.com/auth/user/${vendorId}`)
+                    .then(res => res.json())
+                    .then(vendor => {
+                        if (vendor && vendor.info) {
+                            const profileImage = vendor.info.profile_url || "https://icuklzexzhusblkzglnr.supabase.co/storage/v1/object/public/marketplace/logo/Upstart(2).png";
+                            const titleText = `${vendor.info.username} - Vendor Profile | Upstart`;
+                            const bioText = vendor.info.bio || `Check out ${vendor.info.username}'s profile on Upstart`;
+                            
+                            // Update all meta tags
+                            document.getElementById("ogTitle")?.setAttribute('content', titleText);
+                            document.getElementById("ogImage")?.setAttribute('content', profileImage);
+                            document.getElementById("ogDescription")?.setAttribute('content', bioText);
+                            document.getElementById("twitterTitle")?.setAttribute('content', titleText);
+                            document.getElementById("twitterImage")?.setAttribute('content', profileImage);
+                            document.getElementById("twitterDescription")?.setAttribute('content', bioText);
+                            document.title = titleText;
+                        }
+                    })
+                    .catch(err => console.error('Failed to pre-load meta tags:', err));
+            }
+        })();
+    </script>
 </head>
 <body>
     <!-- Removed custom navbar - now uses shared navbar injected by shared-nav.js -->
