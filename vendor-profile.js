@@ -169,7 +169,7 @@ async function loadVendorProfile() {
             if (navigator.share) {
                 try {
                     const shareData = {
-                        title: `${vendor.info.username} Profile - Upstart`,
+                        title: `${vendor.info.username}'s Profile - Upstart`,
                         text: vendor.info.bio || "Check out this vendor's profile",
                         url: `https://upstartpy.onrender.com/vendor-profile/?vendorId=${vendorId}`
                     };
