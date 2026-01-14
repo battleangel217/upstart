@@ -122,7 +122,7 @@ async function loadVendorProfile() {
     // const profileImage = vendor.info.profile_url || "https://icuklzexzhusblkzglnr.supabase.co/storage/v1/object/public/marketplace/logo/Upstart(2).png"; 
     
     // // Update Open Graph meta tags for link sharing
-    // const titleText = `${vendor.info.username} - Vendor Profile | Upstart`;
+    const titleText = `${vendor.info.username} - Vendor Profile | Upstart`;
     // const bioText = vendor.info.bio || `Check out ${vendor.info.username}'s profile on Upstart`;
     
     // document.getElementById("ogTitle")?.setAttribute('content', titleText);
