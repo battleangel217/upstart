@@ -35,7 +35,12 @@ body {
 
 /* Mobile-only elements hidden by default on desktop */
 .mobile-only {
-  display: none;
+  display: none !important;
+}
+
+/* Ensure desktop search is visible on large screens */
+.search-bar.desktop-search {
+  display: flex !important;
 }
 
 /* Navbar */
@@ -1496,6 +1501,11 @@ body.video-active {
   border-top: 1px solid var(--border);
   font-size: 12px;
   color: var(--text-secondary);
+}
+
+/* Mobile Search Container (Hidden on Desktop) */
+.mobile-search-container {
+  display: none;
 }
 
 /* Responsive */
