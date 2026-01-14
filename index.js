@@ -58,6 +58,11 @@ function showToast(message, type = 'info', options = {}) {
   return { dismiss };
 }
 
+// Global variable to store all products for filtering
+let allProducts = [];
+let currentCategory = 'all';
+let currentSearchQuery = '';
+
 document.addEventListener('DOMContentLoaded', async () => {
   const currentUser = JSON.parse(localStorage.getItem("userData"))
   let headers = {"Content-Type":"application/json"}
@@ -90,11 +95,20 @@ document.addEventListener('DOMContentLoaded', async () => {
       console.log('Products loaded successfully:', products.length, 'items');
     }
     
+  // Store products globally for filtering
+  allProducts = products;
+  
   renderProducts(products);
   // Wait for skeletons to fade out and be removed, then trigger product fade-ins
   await hideLoadingModal();
   const cards = Array.from(document.querySelectorAll('.product-card'));
   cards.forEach((card, idx) => setTimeout(() => card.classList.add('fade-in'), idx * 50));
+
+  // Initialize category filters
+  initializeCategoryFilters();
+  
+  // Initialize search functionality
+  initializeSearch();
 
   }catch(error){
     console.error('Error loading products (index.js):', error);
@@ -133,12 +147,32 @@ document.addEventListener('DOMContentLoaded', async () => {
 //     .join("")
 // }
 
-function renderProducts(product) {
+function renderProducts(products) {
   const productGrid = document.getElementById("productsGrid");
+  
+  // Clear existing products and any "no products" messages
+  const existingProducts = productGrid.querySelectorAll('.product-card');
+  existingProducts.forEach(card => card.remove());
+  
+  // Remove any existing "no products found" message
+  const existingMessage = productGrid.querySelector('p');
+  if (existingMessage) {
+    existingMessage.remove();
+  }
 
-  product.forEach((item) => {
-  productGrid.innerHTML += `
-    <div class="product-card" onclick="openProductModal(${item.id})">
+  if (!products || products.length === 0) {
+    const message = document.createElement('p');
+    message.style.cssText = 'grid-column: 1/-1; text-align: center; padding: 2rem; color: #666;';
+    message.textContent = 'No products found matching your criteria.';
+    productGrid.appendChild(message);
+    return;
+  }
+
+  products.forEach((item) => {
+    const card = document.createElement('div');
+    card.className = 'product-card';
+    card.onclick = () => openProductModal(item.id);
+    card.innerHTML = `
       <img src="${item.image_url[0]}" alt="${item.product_name}" class="product-image">
       <div class="product-card-body">
         <div class="product-card-name">${item.product_name}</div>
@@ -146,16 +180,10 @@ function renderProducts(product) {
         <div class="product-card-vendor">${item.vendor_username}</div>
         <div class="product-card-location">📍 ${item.institute}</div>
       </div>
-    </div>`;
-
-      // document.getElementById("productCard").addEventListener('click', () => {
-      //   openProductModal(item.id);
-      // })
-  })
-
+    `;
+    productGrid.appendChild(card);
+  });
 }
-
-
 
 // Open product modal
 async function openProductModal(productId) {
@@ -506,3 +534,85 @@ function hideLoadingModal() {
     }, 350);
   });
 }
+
+// Initialize category filters
+function initializeCategoryFilters() {
+  const filterButtons = document.querySelectorAll('.filter-btn');
+  
+  filterButtons.forEach(button => {
+    button.addEventListener('click', () => {
+      // Update active state
+      filterButtons.forEach(btn => btn.classList.remove('active'));
+      button.classList.add('active');
+      
+      // Get selected category
+      currentCategory = button.dataset.category;
+      
+      // Apply filters
+      applyFilters();
+    });
+  });
+}
+
+// Initialize search functionality
+function initializeSearch() {
+  const searchInput = document.getElementById('sharedSearchInput');
+  
+  if (!searchInput) {
+    console.warn('Search input not found');
+    return;
+  }
+  
+  // Add event listener with debounce
+  let searchTimeout;
+  searchInput.addEventListener('input', (e) => {
+    clearTimeout(searchTimeout);
+    currentSearchQuery = e.target.value.toLowerCase().trim();
+    
+    // Debounce search by 300ms
+    searchTimeout = setTimeout(() => {
+      applyFilters();
+    }, 300);
+  });
+}
+
+// Apply both category and search filters
+function applyFilters() {
+  let filteredProducts = [...allProducts];
+  
+  // Apply category filter
+  if (currentCategory !== 'all') {
+    filteredProducts = filteredProducts.filter(product => 
+      product.category.toLowerCase() === currentCategory.toLowerCase()
+    );
+  }
+  
+  // Apply search filter
+  if (currentSearchQuery) {
+    filteredProducts = filteredProducts.filter(product => {
+      const searchableText = [
+        product.product_name,
+        product.description,
+        product.vendor_username,
+        product.category,
+        product.institute
+      ].join(' ').toLowerCase();
+      
+      return searchableText.includes(currentSearchQuery);
+    });
+  }
+  
+  // Re-render products
+  renderProducts(filteredProducts);
+  
+  // Add fade-in animation to filtered products
+  const cards = Array.from(document.querySelectorAll('.product-card'));
+  cards.forEach((card, idx) => {
+    card.style.opacity = '0';
+    setTimeout(() => {
+      card.style.transition = 'opacity 0.3s ease';
+      card.style.opacity = '1';
+    }, idx * 30);
+  });
+}
+
