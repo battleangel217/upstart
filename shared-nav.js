@@ -35,6 +35,9 @@ async function initializeNavigation() {
         </div>
 
         <div class="navbar-right">
+          <button class="nav-button search-toggle-btn mobile-only" id="mobileSearchToggle" title="Search">
+            🔍
+          </button>
           <div class="navbar-item auth" id="authControls" style="display:none;">
             <!-- Auth controls (Login / Signup) will be injected here -->
           </div>
@@ -84,6 +87,19 @@ async function initializeNavigation() {
               <a href="#" class="dropdown-item logout-item" id="logoutBtn">Logout</a>
             </div>
           </div>
+        </div>
+      </div>
+      
+      <!-- Search bar container (initially hidden on mobile) -->
+      <div class="mobile-search-container" id="mobileSearchContainer">
+        <div class="search-bar">
+          <input 
+            type="text" 
+            id="mobileSearchInput" 
+            placeholder="Search products..."
+            class="search-input"
+          >
+          <span class="search-icon">🔍</span>
         </div>
       </div>
       
@@ -140,6 +156,9 @@ function initializeNavbarEvents() {
   if (searchBar && !isLandingPage) {
     searchBar.style.display = 'none'
   }
+
+  // Initialize mobile search toggle
+  setupSearchToggle();
 
   // Mobile menu toggle
   const mobileMenuBtn = document.getElementById("mobileMenuBtn")
@@ -306,6 +325,62 @@ function updateVendorMenu() {
     if (analyticsLink) analyticsLink.style.display = "none"
     if (mobileInventoryLink) mobileInventoryLink.style.display = "none"
     if (mobileAnalyticsLink) mobileAnalyticsLink.style.display = "none"
+  }
+}
+
+// Initialize when DOM is ready
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initializeNavigation)
+} else {
+  initializeNavigation()
+}
+
+// Mobile search toggle logic
+function setupSearchToggle() {
+  const mobileSearchToggle = document.getElementById('mobileSearchToggle');
+  const mobileSearchContainer = document.getElementById('mobileSearchContainer');
+  const mobileSearchInput = document.getElementById('mobileSearchInput');
+  const desktopSearchInput = document.getElementById('sharedSearchInput');
+
+  if (mobileSearchToggle && mobileSearchContainer) {
+    mobileSearchToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      mobileSearchContainer.classList.toggle('active');
+      if (mobileSearchContainer.classList.contains('active') && mobileSearchInput) {
+        mobileSearchInput.focus();
+      }
+    });
+
+    // Close search when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!mobileSearchContainer.contains(e.target) && !mobileSearchToggle.contains(e.target)) {
+        mobileSearchContainer.classList.remove('active');
+      }
+    });
+    
+    // Sync mobile search with desktop search functionality
+    if (mobileSearchInput && window.initializeSearch) {
+      // Debounce setup for mobile input
+      let searchTimeout;
+      mobileSearchInput.addEventListener('input', (e) => {
+        clearTimeout(searchTimeout);
+        // Sync value to global search var or trigger same event
+        const query = e.target.value;
+        if (desktopSearchInput) desktopSearchInput.value = query;
+        
+        // Trigger search event manually if on index page
+        if (window.location.pathname.endsWith('index.html') || window.location.pathname === '/' || window.location.pathname.endsWith('/')) {
+           if (typeof currentSearchQuery !== 'undefined') {
+              currentSearchQuery = query.toLowerCase().trim();
+           }
+           searchTimeout = setTimeout(() => {
+              if (typeof applyFilters === 'function') {
+                applyFilters();
+              }
+           }, 300);
+        }
+      });
+    }
   }
 }
 
