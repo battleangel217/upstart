@@ -473,7 +473,7 @@ async function openProductModal(productId) {
             showToast(error.message || 'Failed to create conversation', 'error');
             return
           }
-          window.location.href = `chat.html?vendorId=${product.vendor_id}`
+          window.location.href = `chat.html`
         }catch(error){
           console.error('Error contacting vendor:', error);
           showToast('Failed to contact vendor. Please try again.', 'error');

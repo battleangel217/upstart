@@ -170,7 +170,7 @@ async function loadVendorProfile() {
                 try {
                     const shareData = {
                         title: `${vendor.info.username}'s Profile - Upstart`,
-                        url: `https://upstartpy.onrender.com/vendor-profile/?vendorId=${vendorId}`
+                        url: `https://upstartpy.onrender.com/vendor-profile?vendorId=${vendorId}`
                     };
 
                     // try {
@@ -195,7 +195,7 @@ async function loadVendorProfile() {
                 }
             } else {
                 // Fallback for browsers that don't support Web Share API
-                navigator.clipboard.writeText(`https://upstartpy.onrender.com/vendor-profile/?vendorId=${vendorId}`)
+                navigator.clipboard.writeText(`https://upstartpy.onrender.com/vendor-profile?vendorId=${vendorId}`)
                     .then(() => showToast('Profile link copied to clipboard!', 'success'))
                     .catch(() => showToast('Failed to copy link', 'error'));
             }
@@ -532,6 +532,34 @@ function hideLoadingModal() {
     document.body.classList.remove("loading-active");
   }, 600);
 }
+
+document.getElementById('contactBtn').addEventListener('click', async() => {
+  const currentUser = JSON.parse(localStorage.getItem('userData'))
+  if (!currentUser){
+    showToast("Please log in to contact vendor", "error");
+    window.location.href='login.html';
+    return;
+  }
+  try{
+    const response = await fetch(`https://upstartpy.onrender.com/chat/create/${vendorId}`,{
+      method: 'POST',
+      headers: {
+        "Authorization":`Bearer ${currentUser.access}`,
+        "Content-Type":"application/json"
+      }
+    })
+    if (!response.ok){
+      const error = await response.json();
+      console.error('Error creating conversation:', response.status, error)
+      showToast(error.message || 'Failed to create conversation', 'error');
+      return
+    }
+    window.location.href = `chat.html`
+  }catch(error){
+    console.error('Error contacting vendor:', error);
+    showToast('Failed to contact vendor. Please try again.', 'error');
+  }
+})
 
 document.addEventListener("DOMContentLoaded", () => {
   loadVendorProfile()
