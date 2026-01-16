@@ -593,8 +593,8 @@ body {
 /* Gallery Thumbnails */
 .gallery-thumbnails {
   display: flex;
+  flex-wrap: wrap;
   gap: 12px;
-  overflow-x: auto;
   padding: 4px;
 }
 
